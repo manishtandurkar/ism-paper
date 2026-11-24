@@ -4,892 +4,1054 @@
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
+\usepackage{booktabs}
+% ieeeaccess.cls redefines \year, which pgf needs as the TeX primitive
+\let\accessyear\year
+\protected\def\year{\pdfprimitive\year}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc}
+\let\year\accessyear
+% captions of plain figure environments read \xfigwd, set by the class's \Figure
+\def\xfigwd{0pt}
+% xcolor (loaded by TikZ) cannot use the class's Pantone spot color, so use its CMYK equivalent
+\definecolor{accessblue}{cmyk}{1,0.3,0,0.2}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 \begin{document}
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2017.DOI}
 
-\title{Preparation of Papers for IEEE ACCESS}
-\author{\uppercase{First A. Author}\authorrefmark{1}, \IEEEmembership{Fellow, IEEE},
-\uppercase{Second B. Author\authorrefmark{2}, and Third C. Author,
-Jr}.\authorrefmark{3},
-\IEEEmembership{Member, IEEE}}
-\address[1]{National Institute of Standards and 
-Technology, Boulder, CO 80305 USA (e-mail: author@boulder.nist.gov)}
-\address[2]{Department of Physics, Colorado State University, Fort Collins, 
-CO 80523 USA (e-mail: author@lamar.colostate.edu)}
-\address[3]{Electrical Engineering Department, University of Colorado, Boulder, CO 
-80309 USA}
-\tfootnote{This paragraph of the first footnote will contain support 
-information, including sponsor and financial support acknowledgment. For 
-example, ``This work was supported in part by the U.S. Department of 
-Commerce under Grant BS123456.''}
+\title{StorageLab: A Verifiable, Hardware-Independent Laboratory for RAID, Disk Performance, and Data Protection Education}
+\author{\uppercase{First Author}\authorrefmark{1},
+\uppercase{Second Author}\authorrefmark{1}, \uppercase{and Third Author}\authorrefmark{1}}
+\address[1]{\todo{Department, Institution, City, Country} (e-mail: \todo{e-mail})}
+\tfootnote{\todo{Funding or support statement, if any.}}
 
 \markboth
-{Author \headeretal: Preparation of Papers for IEEE TRANSACTIONS and JOURNALS}
-{Author \headeretal: Preparation of Papers for IEEE TRANSACTIONS and JOURNALS}
+{Author \headeretal: StorageLab: A Verifiable Laboratory for Storage Systems Education}
+{Author \headeretal: StorageLab: A Verifiable Laboratory for Storage Systems Education}
 
-\corresp{Corresponding author: First A. Author (e-mail: author@ boulder.nist.gov).}
+\corresp{Corresponding author: \todo{Name} (e-mail: \todo{e-mail}).}
 
 \begin{abstract}
-These instructions give you guidelines for preparing papers for 
-IEEE Access. Use this document as a template if you are 
-using \LaTeX. Otherwise, use this document as an 
-instruction set. The electronic file of your paper will be formatted further 
-at IEEE. Paper titles should be written in uppercase and lowercase letters, 
-not all uppercase. Avoid writing long formulas with subscripts in the title; 
-short formulas that identify the elements are fine (e.g., "Nd--Fe--B"). Do 
-not write ``(Invited)'' in the title. Full names of authors are preferred in 
-the author field, but are not required. Put a space between authors' 
-initials. The abstract must be a concise yet comprehensive reflection of 
-what is in your article. In particular, the abstract must be self-contained, 
-without abbreviations, footnotes, or references. It should be a microcosm of 
-the full article. The abstract must be between 150--250 words. Be sure that 
-you adhere to these limits; otherwise, you will need to edit your abstract 
-accordingly. The abstract must be written as one paragraph, and should not 
-contain displayed mathematical equations or tabular material. The abstract 
-should include three or four different keywords or phrases, as this will 
-help readers to find it. It is important to avoid over-repetition of such 
-phrases as this can result in a page being rejected by search engines. 
-Ensure that your abstract reads well and is grammatically correct.
+Core storage concepts such as parity, degraded operation, rebuild, queueing
+delay, recovery objectives, and replication lag are usually taught with
+static diagrams, because enterprise arrays and multi-site links are not
+available in a classroom. Production tools hide the block layout and require
+privileged access, while online calculators return numbers without a
+derivation or any failure behavior. This paper presents StorageLab, a
+hardware-independent, web-based laboratory that combines five analytical
+models with a block-level redundant array of independent disks (RAID)
+engine. The models cover RAID capacity and failure states, single-disk
+queueing performance, backup storage with recovery point and recovery time
+compliance, synchronous and asynchronous replication, and likelihood-impact
+risk. The engine stripes a real user file across one file per simulated disk
+using RAID 0, 1, 5, 6, or 10. RAID 5 uses rotating exclusive-or parity, and
+RAID 6 adds a Reed-Solomon syndrome over the Galois field of 256 elements.
+A disk failure is injected by deleting its file. The engine then reads in
+degraded mode, rebuilds onto a hot spare with streamed progress, and proves
+recovery by comparing the SHA-256 digest of the reassembled file with the
+original. Every analytical result carries its units, stated assumptions, and
+a rule-based explanation generated from the same formulas. An exhaustive
+fault-injection campaign over 1,058 failure combinations across 14 array
+configurations found zero silent corruptions, and the engine's
+recoverability predicate agreed with the observed outcome in every case. For a 4 MiB
+file, every engine operation completes within 25 ms on a laptop, without
+special privileges.
 \end{abstract}
 
 \begin{keywords}
-Enter key words or phrases in alphabetical 
-order, separated by commas. For a list of suggested keywords, send a blank 
-e-mail to keywords@ieee.org or visit \underline
-{http://www.ieee.org/organizations/pubs/ani\_prod/keywrd98.txt}
+Backup and recovery, computer science education, erasure coding, Galois
+fields, queueing theory, RAID, Reed-Solomon codes, replication, simulation,
+storage systems.
 \end{keywords}
 
 \titlepgskip=-15pt
 
 \maketitle
 
+%======================================================================
 \section{Introduction}
-\label{sec:introduction}
-\PARstart{T}{his} document is a template for \LaTeX. If you are 
-reading a paper or PDF version of this document, please download the 
-electronic file, trans\_jour.tex, from the IEEE Web site at \underline
-{http://ieeeauthorcenter.ieee.org/create-your-ieee-article/}\break\underline{use-authoring-tools-and-ieee-article-templates/ieee-article-}\break\underline{templates/} so you can use it to prepare your manuscript. If 
-you would prefer to use LaTeX, download IEEE's LaTeX style and sample files 
-from the same Web page. You can also explore using the Overleaf editor at 
-\underline
-{https://www.overleaf.com/blog/278-how-to-use-overleaf-}\break\underline{with-ieee-collabratec-your-quick-guide-to-getting-started}\break\underline{\#.xsVp6tpPkrKM9}
-
-If your paper is intended for a conference, please contact your conference 
-editor concerning acceptable word processor formats for your particular 
-conference. 
-
-IEEE will do the final formatting of your paper. If your paper is intended 
-for a conference, please observe the conference page limits. 
-
-\subsection{Abbreviations and Acronyms}
-Define abbreviations and acronyms the first time they are used in the text, 
-even after they have already been defined in the abstract. Abbreviations 
-such as IEEE, SI, ac, and dc do not have to be defined. Abbreviations that 
-incorporate periods should not have spaces: write ``C.N.R.S.,'' not ``C. N. 
-R. S.'' Do not use abbreviations in the title unless they are unavoidable 
-(for example, ``IEEE'' in the title of this article).
-
-\subsection{Other Recommendations}
-Use one space after periods and colons. Hyphenate complex modifiers: 
-``zero-field-cooled magnetization.'' Avoid dangling participles, such as, 
-``Using \eqref{eq}, the potential was calculated.'' [It is not clear who or what 
-used \eqref{eq}.] Write instead, ``The potential was calculated by using \eqref{eq},'' or 
-``Using \eqref{eq}, we calculated the potential.''
-
-Use a zero before decimal points: ``0.25,'' not ``.25.'' Use 
-``cm$^{3}$,'' not ``cc.'' Indicate sample dimensions as ``0.1 cm 
-$\times $ 0.2 cm,'' not ``0.1 $\times $ 0.2 cm$^{2}$.'' The 
-abbreviation for ``seconds'' is ``s,'' not ``sec.'' Use 
-``Wb/m$^{2}$'' or ``webers per square meter,'' not 
-``webers/m$^{2}$.'' When expressing a range of values, write ``7 to 
-9'' or ``7--9,'' not ``7$\sim $9.''
-
-A parenthetical statement at the end of a sentence is punctuated outside of 
-the closing parenthesis (like this). (A parenthetical sentence is punctuated 
-within the parentheses.) In American English, periods and commas are within 
-quotation marks, like ``this period.'' Other punctuation is ``outside''! 
-Avoid contractions; for example, write ``do not'' instead of ``don't.'' The 
-serial comma is preferred: ``A, B, and C'' instead of ``A, B and C.''
-
-If you wish, you may write in the first person singular or plural and use 
-the active voice (``I observed that $\ldots$'' or ``We observed that $\ldots$'' 
-instead of ``It was observed that $\ldots$''). Remember to check spelling. If 
-your native language is not English, please get a native English-speaking 
-colleague to carefully proofread your paper.
-
-Try not to use too many typefaces in the same article. You're writing
-scholarly papers, not ransom notes. Also please remember that MathJax
-can't handle really weird typefaces.
-
-\subsection{Equations}
-Number equations consecutively with equation numbers in parentheses flush 
-with the right margin, as in \eqref{eq}. To make your equations more 
-compact, you may use the solidus (~/~), the exp function, or appropriate 
-exponents. Use parentheses to avoid ambiguities in denominators. Punctuate 
-equations when they are part of a sentence, as in
-\begin{equation}E=mc^2.\label{eq}\end{equation}
-
-Be sure that the symbols in your equation have been defined before the 
-equation appears or immediately following. Italicize symbols ($T$ might refer 
-to temperature, but T is the unit tesla). Refer to ``\eqref{eq},'' not ``Eq. \eqref{eq}'' 
-or ``equation \eqref{eq},'' except at the beginning of a sentence: ``Equation \eqref{eq} 
-is $\ldots$ .''
-
-\subsection{\LaTeX-Specific Advice}
-
-Please use ``soft'' (e.g., \verb|\eqref{Eq}|) cross references instead
-of ``hard'' references (e.g., \verb|(1)|). That will make it possible
-to combine sections, add equations, or change the order of figures or
-citations without having to go through the file line by line.
-
-Please don't use the \verb|{eqnarray}| equation environment. Use
-\verb|{align}| or \verb|{IEEEeqnarray}| instead. The \verb|{eqnarray}|
-environment leaves unsightly spaces around relation symbols.
-
-Please note that the \verb|{subequations}| environment in {\LaTeX}
-will increment the main equation counter even when there are no
-equation numbers displayed. If you forget that, you might write an
-article in which the equation numbers skip from (17) to (20), causing
-the copy editors to wonder if you've discovered a new method of
-counting.
-
-{\BibTeX} does not work by magic. It doesn't get the bibliographic
-data from thin air but from .bib files. If you use {\BibTeX} to produce a
-bibliography you must send the .bib files. 
-
-{\LaTeX} can't read your mind. If you assign the same label to a
-subsubsection and a table, you might find that Table I has been cross
-referenced as Table IV-B3. 
-
-{\LaTeX} does not have precognitive abilities. If you put a
-\verb|\label| command before the command that updates the counter it's
-supposed to be using, the label will pick up the last counter to be
-cross referenced instead. In particular, a \verb|\label| command
-should not go before the caption of a figure or a table.
-
-Do not use \verb|\nonumber| inside the \verb|{array}| environment. It
-will not stop equation numbers inside \verb|{array}| (there won't be
-any anyway) and it might stop a wanted equation number in the
-surrounding equation.
-
-\section{Units}
-Use either SI (MKS) or CGS as primary units. (SI units are strongly 
-encouraged.) English units may be used as secondary units (in parentheses). 
-This applies to papers in data storage. For example, write ``15 
-Gb/cm$^{2}$ (100 Gb/in$^{2})$.'' An exception is when 
-English units are used as identifiers in trade, such as ``3\textonehalf-in 
-disk drive.'' Avoid combining SI and CGS units, such as current in amperes 
-and magnetic field in oersteds. This often leads to confusion because 
-equations do not balance dimensionally. If you must use mixed units, clearly 
-state the units for each quantity in an equation.
-
-The SI unit for magnetic field strength $H$ is A/m. However, if you wish to use 
-units of T, either refer to magnetic flux density $B$ or magnetic field 
-strength symbolized as $\mu _{0}H$. Use the center dot to separate 
-compound units, e.g., ``A$\cdot $m$^{2}$.''
-
-\section{Some Common Mistakes}
-The word ``data'' is plural, not singular. The subscript for the 
-permeability of vacuum $\mu _{0}$ is zero, not a lowercase letter 
-``o.'' The term for residual magnetization is ``remanence''; the adjective 
-is ``remanent''; do not write ``remnance'' or ``remnant.'' Use the word 
-``micrometer'' instead of ``micron.'' A graph within a graph is an 
-``inset,'' not an ``insert.'' The word ``alternatively'' is preferred to the 
-word ``alternately'' (unless you really mean something that alternates). Use 
-the word ``whereas'' instead of ``while'' (unless you are referring to 
-simultaneous events). Do not use the word ``essentially'' to mean 
-``approximately'' or ``effectively.'' Do not use the word ``issue'' as a 
-euphemism for ``problem.'' When compositions are not specified, separate 
-chemical symbols by en-dashes; for example, ``NiMn'' indicates the 
-intermetallic compound Ni$_{0.5}$Mn$_{0.5}$ whereas 
-``Ni--Mn'' indicates an alloy of some composition 
-Ni$_{x}$Mn$_{1-x}$.
-
-\Figure[t!](topskip=0pt, botskip=0pt, midskip=0pt){fig1.png}
-{Magnetization as a function of applied field.
-It is good practice to explain the significance of the figure in the caption.\label{fig1}}
-
-Be aware of the different meanings of the homophones ``affect'' (usually a 
-verb) and ``effect'' (usually a noun), ``complement'' and ``compliment,'' 
-``discreet'' and ``discrete,'' ``principal'' (e.g., ``principal 
-investigator'') and ``principle'' (e.g., ``principle of measurement''). Do 
-not confuse ``imply'' and ``infer.'' 
-
-Prefixes such as ``non,'' ``sub,'' ``micro,'' ``multi,'' and ``ultra'' are 
-not independent words; they should be joined to the words they modify, 
-usually without a hyphen. There is no period after the ``et'' in the Latin 
-abbreviation ``\emph{et al.}'' (it is also italicized). The abbreviation ``i.e.,'' means 
-``that is,'' and the abbreviation ``e.g.,'' means ``for example'' (these 
-abbreviations are not italicized).
-
-A general IEEE styleguide is available at \underline{http://www.ieee.org/}\break\underline{authortools}.
-
-\section{Guidelines for Graphics Preparation and Submission}
-\label{sec:guidelines}
-
-\subsection{Types of Graphics}
-The following list outlines the different types of graphics published in 
-IEEE journals. They are categorized based on their construction, and use of 
-color/shades of gray:
-
-\subsubsection{Color/Grayscale figures}
-{Figures that are meant to appear in color, or shades of black/gray. Such 
-figures may include photographs, illustrations, multicolor graphs, and 
-flowcharts.}
-
-\subsubsection{Line Art figures}
-{Figures that are composed of only black lines and shapes. These figures 
-should have no shades or half-tones of gray, only black and white.}
-
-\subsubsection{Author photos}
-{Head and shoulders shots of authors that appear at the end of our papers. }
-
-\subsubsection{Tables}
-{Data charts which are typically black and white, but sometimes include 
-color.}
-
-\begin{table}
-\caption{Units for Magnetic Properties}
-\label{table}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{|p{25pt}|p{75pt}|p{115pt}|}
-\hline
-Symbol& 
-Quantity& 
-Conversion from Gaussian and \par CGS EMU to SI $^{\mathrm{a}}$ \\
-\hline
-$\Phi $& 
-magnetic flux& 
-1 Mx $\to  10^{-8}$ Wb $= 10^{-8}$ V$\cdot $s \\
-$B$& 
-magnetic flux density, \par magnetic induction& 
-1 G $\to  10^{-4}$ T $= 10^{-4}$ Wb/m$^{2}$ \\
-$H$& 
-magnetic field strength& 
-1 Oe $\to  10^{3}/(4\pi )$ A/m \\
-$m$& 
-magnetic moment& 
-1 erg/G $=$ 1 emu \par $\to 10^{-3}$ A$\cdot $m$^{2} = 10^{-3}$ J/T \\
-$M$& 
-magnetization& 
-1 erg/(G$\cdot $cm$^{3}) =$ 1 emu/cm$^{3}$ \par $\to 10^{3}$ A/m \\
-4$\pi M$& 
-magnetization& 
-1 G $\to  10^{3}/(4\pi )$ A/m \\
-$\sigma $& 
-specific magnetization& 
-1 erg/(G$\cdot $g) $=$ 1 emu/g $\to $ 1 A$\cdot $m$^{2}$/kg \\
-$j$& 
-magnetic dipole \par moment& 
-1 erg/G $=$ 1 emu \par $\to 4\pi \times  10^{-10}$ Wb$\cdot $m \\
-$J$& 
-magnetic polarization& 
-1 erg/(G$\cdot $cm$^{3}) =$ 1 emu/cm$^{3}$ \par $\to 4\pi \times  10^{-4}$ T \\
-$\chi , \kappa $& 
-susceptibility& 
-1 $\to  4\pi $ \\
-$\chi_{\rho }$& 
-mass susceptibility& 
-1 cm$^{3}$/g $\to  4\pi \times  10^{-3}$ m$^{3}$/kg \\
-$\mu $& 
-permeability& 
-1 $\to  4\pi \times  10^{-7}$ H/m \par $= 4\pi \times  10^{-7}$ Wb/(A$\cdot $m) \\
-$\mu_{r}$& 
-relative permeability& 
-$\mu \to \mu_{r}$ \\
-$w, W$& 
-energy density& 
-1 erg/cm$^{3} \to  10^{-1}$ J/m$^{3}$ \\
-$N, D$& 
-demagnetizing factor& 
-1 $\to  1/(4\pi )$ \\
-\hline
-\multicolumn{3}{p{251pt}}{Vertical lines are optional in tables. Statements that serve as captions for 
-the entire table do not need footnote letters. }\\
-\multicolumn{3}{p{251pt}}{$^{\mathrm{a}}$Gaussian units are the same as cg emu for magnetostatics; Mx 
-$=$ maxwell, G $=$ gauss, Oe $=$ oersted; Wb $=$ weber, V $=$ volt, s $=$ 
-second, T $=$ tesla, m $=$ meter, A $=$ ampere, J $=$ joule, kg $=$ 
-kilogram, H $=$ henry.}
-\end{tabular}
-\label{tab1}
-\end{table}
-
-\subsection{Multipart figures}
-Figures compiled of more than one sub-figure presented side-by-side, or 
-stacked. If a multipart figure is made up of multiple figure
-types (one part is lineart, and another is grayscale or color) the figure 
-should meet the stricter guidelines.
-
-\subsection{File Formats For Graphics}\label{formats}
-Format and save your graphics using a suitable graphics processing program 
-that will allow you to create the images as PostScript (PS), Encapsulated 
-PostScript (.EPS), Tagged Image File Format (.TIFF), Portable Document 
-Format (.PDF), Portable Network Graphics (.PNG), or Metapost (.MPS), sizes them, and adjusts 
-the resolution settings. When 
-submitting your final paper, your graphics should all be submitted 
-individually in one of these formats along with the manuscript.
-
-\subsection{Sizing of Graphics}
-Most charts, graphs, and tables are one column wide (3.5 inches/88 
-millimeters/21 picas) or page wide (7.16 inches/181 millimeters/43 
-picas). The maximum depth a graphic can be is 8.5 inches (216 millimeters/54
-picas). When choosing the depth of a graphic, please allow space for a 
-caption. Figures can be sized between column and page widths if the author 
-chooses, however it is recommended that figures are not sized less than 
-column width unless when necessary. 
-
-There is currently one publication with column measurements that do not 
-coincide with those listed above. Proceedings of the IEEE has a column 
-measurement of 3.25 inches (82.5 millimeters/19.5 picas). 
-
-The final printed size of author photographs is exactly
-1 inch wide by 1.25 inches tall (25.4 millimeters$\,\times\,$31.75 millimeters/6 
-picas$\,\times\,$7.5 picas). Author photos printed in editorials measure 1.59 inches 
-wide by 2 inches tall (40 millimeters$\,\times\,$50 millimeters/9.5 picas$\,\times\,$12 
-picas).
-
-\subsection{Resolution }
-The proper resolution of your figures will depend on the type of figure it 
-is as defined in the ``Types of Figures'' section. Author photographs, 
-color, and grayscale figures should be at least 300dpi. Line art, including 
-tables should be a minimum of 600dpi.
-
-\subsection{Vector Art}
-In order to preserve the figures' integrity across multiple computer 
-platforms, we accept files in the following formats: .EPS/.PDF/.PS. All 
-fonts must be embedded or text converted to outlines in order to achieve the 
-best-quality results.
-
-\subsection{Color Space}
-The term color space refers to the entire sum of colors that can be 
-represented within the said medium. For our purposes, the three main color 
-spaces are Grayscale, RGB (red/green/blue) and CMYK 
-(cyan/magenta/yellow/black). RGB is generally used with on-screen graphics, 
-whereas CMYK is used for printing purposes.
-
-All color figures should be generated in RGB or CMYK color space. Grayscale 
-images should be submitted in Grayscale color space. Line art may be 
-provided in grayscale OR bitmap colorspace. Note that ``bitmap colorspace'' 
-and ``bitmap file format'' are not the same thing. When bitmap color space 
-is selected, .TIF/.TIFF/.PNG are the recommended file formats.
-
-\subsection{Accepted Fonts Within Figures}
-When preparing your graphics IEEE suggests that you use of one of the 
-following Open Type fonts: Times New Roman, Helvetica, Arial, Cambria, and 
-Symbol. If you are supplying EPS, PS, or PDF files all fonts must be 
-embedded. Some fonts may only be native to your operating system; without 
-the fonts embedded, parts of the graphic may be distorted or missing.
-
-A safe option when finalizing your figures is to strip out the fonts before 
-you save the files, creating ``outline'' type. This converts fonts to 
-artwork what will appear uniformly on any screen.
-
-\subsection{Using Labels Within Figures}
-
-\subsubsection{Figure Axis labels }
-Figure axis labels are often a source of confusion. Use words rather than 
-symbols. As an example, write the quantity ``Magnetization,'' or 
-``Magnetization M,'' not just ``M.'' Put units in parentheses. Do not label 
-axes only with units. As in Fig. 1, for example, write ``Magnetization 
-(A/m)'' or ``Magnetization (A$\cdot$m$^{-1}$),'' not just ``A/m.'' Do not label axes with a ratio of quantities and 
-units. For example, write ``Temperature (K),'' not ``Temperature/K.'' 
-
-Multipliers can be especially confusing. Write ``Magnetization (kA/m)'' or 
-``Magnetization (10$^{3}$ A/m).'' Do not write ``Magnetization 
-(A/m)$\,\times\,$1000'' because the reader would not know whether the top 
-axis label in Fig. 1 meant 16000 A/m or 0.016 A/m. Figure labels should be 
-legible, approximately 8 to 10 point type.
-
-\subsubsection{Subfigure Labels in Multipart Figures and Tables}
-Multipart figures should be combined and labeled before final submission. 
-Labels should appear centered below each subfigure in 8 point Times New 
-Roman font in the format of (a) (b) (c). 
-
-\subsection{File Naming}
-Figures (line artwork or photographs) should be named starting with the 
-first 5 letters of the author's last name. The next characters in the 
-filename should be the number that represents the sequential 
-location of this image in your article. For example, in author 
-``Anderson's'' paper, the first three figures would be named ander1.tif, 
-ander2.tif, and ander3.ps.
-
-Tables should contain only the body of the table (not the caption) and 
-should be named similarly to figures, except that `.t' is inserted 
-in-between the author's name and the table number. For example, author 
-Anderson's first three tables would be named ander.t1.tif, ander.t2.ps, 
-ander.t3.eps.
-
-Author photographs should be named using the first five characters of the 
-pictured author's last name. For example, four author photographs for a 
-paper may be named: oppen.ps, moshc.tif, chen.eps, and duran.pdf.
-
-If two authors or more have the same last name, their first initial(s) can 
-be substituted for the fifth, fourth, third$\ldots$ letters of their surname 
-until the degree where there is differentiation. For example, two authors 
-Michael and Monica Oppenheimer's photos would be named oppmi.tif, and 
-oppmo.eps.
-
-\subsection{Referencing a Figure or Table Within Your Paper}
-When referencing your figures and tables within your paper, use the 
-abbreviation ``Fig.'' even at the beginning of a sentence. Do not abbreviate 
-``Table.'' Tables should be numbered with Roman Numerals.
-
-\subsection{Checking Your Figures: The IEEE Graphics Analyzer}
-The IEEE Graphics Analyzer enables authors to pre-screen their graphics for 
-compliance with IEEE Access standards before submission. 
-The online tool, located at
-\underline{http://graphicsqc.ieee.org/}, allows authors to 
-upload their graphics in order to check that each file is the correct file 
-format, resolution, size and colorspace; that no fonts are missing or 
-corrupt; that figures are not compiled in layers or have transparency, and 
-that they are named according to the IEEE Access naming 
-convention. At the end of this automated process, authors are provided with 
-a detailed report on each graphic within the web applet, as well as by 
-email.
-
-For more information on using the Graphics Analyzer or any other graphics 
-related topic, contact the IEEE Graphics Help Desk by e-mail at 
-graphics@ieee.org.
-
-\subsection{Submitting Your Graphics}
-Because IEEE will do the final formatting of your paper,
-you do not need to position figures and tables at the top and bottom of each 
-column. In fact, all figures, figure captions, and tables can be placed at 
-the end of your paper. In addition to, or even in lieu of submitting figures 
-within your final manuscript, figures should be submitted individually, 
-separate from the manuscript in one of the file formats listed above in 
-Section \ref{formats}. Place figure captions below the figures; place table titles 
-above the tables. Please do not include captions as part of the figures, or 
-put them in ``text boxes'' linked to the figures. Also, do not place borders 
-around the outside of your figures.
-
-\subsection{Color Processing/Printing in IEEE Journals}
-All IEEE Transactions, Journals, and Letters allow an author to publish 
-color figures on IEEE Xplore\textregistered\ at no charge, and automatically 
-convert them to grayscale for print versions. In most journals, figures and 
-tables may alternatively be printed in color if an author chooses to do so. 
-Please note that this service comes at an extra expense to the author. If 
-you intend to have print color graphics, include a note with your final 
-paper indicating which figures or tables you would like to be handled that 
-way, and stating that you are willing to pay the additional fee.
-
-\section{Conclusion}
-A conclusion section is not required. Although a conclusion may review the 
-main points of the paper, do not replicate the abstract as the conclusion. A 
-conclusion might elaborate on the importance of the work or suggest 
-applications and extensions. 
-
-\appendices
-
-Appendixes, if needed, appear before the acknowledgment.
-
-\section*{Acknowledgment}
-
-The preferred spelling of the word ``acknowledgment'' in American English is 
-without an ``e'' after the ``g.'' Use the singular heading even if you have 
-many acknowledgments. Avoid expressions such as ``One of us (S.B.A.) would 
-like to thank $\ldots$ .'' Instead, write ``F. A. Author thanks $\ldots$ .'' In most 
-cases, sponsor and financial support acknowledgments are placed in the 
-unnumbered footnote on the first page, not here.
-
-\section*{References and Footnotes}
-
-\subsection{References}
-References need not be cited in text. When they are, they appear on the 
-line, in square brackets, inside the punctuation. Multiple references are 
-each numbered with separate brackets. When citing a section in a book, 
-please give the relevant page numbers. In text, refer simply to the 
-reference number. Do not use ``Ref.'' or ``reference'' except at the 
-beginning of a sentence: ``Reference \cite{b3} shows $\ldots$ .'' Please do not use 
-automatic endnotes in \emph{Word}, rather, type the reference list at the end of the 
-paper using the ``References'' style.
-
-Reference numbers are set flush left and form a column of their own, hanging 
-out beyond the body of the reference. The reference numbers are on the line, 
-enclosed in square brackets. In all references, the given name of the author 
-or editor is abbreviated to the initial only and precedes the last name. Use 
-them all; use \emph{et al.} only if names are not given. Use commas around Jr., 
-Sr., and III in names. Abbreviate conference titles. When citing IEEE 
-transactions, provide the issue number, page range, volume number, year, 
-and/or month if available. When referencing a patent, provide the day and 
-the month of issue, or application. References may not include all 
-information; please obtain and include relevant information. Do not combine 
-references. There must be only one reference with each number. If there is a 
-URL included with the print reference, it can be included at the end of the 
-reference. 
-
-Other than books, capitalize only the first word in a paper title, except 
-for proper nouns and element symbols. For papers published in translation 
-journals, please give the English citation first, followed by the original 
-foreign-language citation See the end of this document for formats and 
-examples of common references. For a complete discussion of references and 
-their formats, see the IEEE style manual at
-\underline{http://www.ieee.org/authortools}.
-
-\subsection{Footnotes}
-Number footnotes separately in superscript numbers.\footnote{It is recommended that footnotes be avoided (except for 
-the unnumbered footnote with the receipt date on the first page). Instead, 
-try to integrate the footnote information into the text.} Place the actual 
-footnote at the bottom of the column in which it is cited; do not put 
-footnotes in the reference list (endnotes). Use letters for table footnotes 
-(see Table \ref{table}).
-
-\section{Submitting Your Paper for Review}
-
-\subsection{Final Stage}
-When you submit your final version (after your paper has been accepted), 
-print it in two-column format, including figures and tables. You must also 
-send your final manuscript on a disk, via e-mail, or through a Web 
-manuscript submission system as directed by the society contact. You may use 
-\emph{Zip} for large files, or compress files using \emph{Compress, Pkzip, Stuffit,} or \emph{Gzip.} 
-
-Also, send a sheet of paper or PDF with complete contact information for all 
-authors. Include full mailing addresses, telephone numbers, fax numbers, and 
-e-mail addresses. This information will be used to send each author a 
-complimentary copy of the journal in which the paper appears. In addition, 
-designate one author as the ``corresponding author.'' This is the author to 
-whom proofs of the paper will be sent. Proofs are sent to the corresponding 
-author only.
-
-\subsection{Review Stage Using ScholarOne\textregistered\ Manuscripts}
-Contributions to the Transactions, Journals, and Letters may be submitted 
-electronically on IEEE's on-line manuscript submission and peer-review 
-system, ScholarOne\textregistered\ Manuscripts. You can get a listing of the 
-publications that participate in ScholarOne at 
-\underline{http://www.ieee.org/publications\_standards/publications/}\break\underline{authors/authors\_submission.html}.
-First check if you have an existing account. If there is none, please create 
-a new account. After logging in, go to your Author Center and click ``Submit 
-First Draft of a New Manuscript.'' 
-
-Along with other information, you will be asked to select the subject from a 
-pull-down list. Depending on the journal, there are various steps to the 
-submission process; you must complete all steps for a complete submission. 
-At the end of each step you must click ``Save and Continue''; just uploading 
-the paper is not sufficient. After the last step, you should see a 
-confirmation that the submission is complete. You should also receive an 
-e-mail confirmation. For inquiries regarding the submission of your paper on 
-ScholarOne Manuscripts, please contact oprs-support@ieee.org or call +1 732 
-465 5861.
-
-ScholarOne Manuscripts will accept files for review in various formats. 
-Please check the guidelines of the specific journal for which you plan to 
-submit.
-
-You will be asked to file an electronic copyright form immediately upon 
-completing the submission process (authors are responsible for obtaining any 
-security clearances). Failure to submit the electronic copyright could 
-result in publishing delays later. You will also have the opportunity to 
-designate your article as ``open access'' if you agree to pay the IEEE open 
-access fee. 
-
-\subsection{Final Stage Using ScholarOne Manuscripts}
-Upon acceptance, you will receive an email with specific instructions 
-regarding the submission of your final files. To avoid any delays in 
-publication, please be sure to follow these instructions. Most journals 
-require that final submissions be uploaded through ScholarOne Manuscripts, 
-although some may still accept final submissions via email. Final 
-submissions should include source files of your accepted manuscript, high 
-quality graphic files, and a formatted pdf file. If you have any questions 
-regarding the final submission process, please contact the administrative 
-contact for the journal. 
-
-In addition to this, upload a file with complete contact information for all 
-authors. Include full mailing addresses, telephone numbers, fax numbers, and 
-e-mail addresses. Designate the author who submitted the manuscript on 
-ScholarOne Manuscripts as the ``corresponding author.'' This is the only 
-author to whom proofs of the paper will be sent. 
-
-\subsection{Copyright Form}
-Authors must submit an electronic IEEE Copyright Form (eCF) upon submitting 
-their final manuscript files. You can access the eCF system through your 
-manuscript submission system or through the Author Gateway. You are 
-responsible for obtaining any necessary approvals and/or security 
-clearances. For additional information on intellectual property rights, 
-visit the IEEE Intellectual Property Rights department web page at 
-\underline{http://www.ieee.org/publications\_standards/publications/}\break\underline{rights/index.html}. 
-
-\section{IEEE Publishing Policy}
-The general IEEE policy requires that authors should only submit original 
-work that has neither appeared elsewhere for publication, nor is under 
-review for another refereed publication. The submitting author must disclose 
-all prior publication(s) and current submissions when submitting a 
-manuscript. Do not publish ``preliminary'' data or results. The submitting 
-author is responsible for obtaining agreement of all coauthors and any 
-consent required from employers or sponsors before submitting an article. 
-The IEEE Access Department strongly discourages courtesy 
-authorship; it is the obligation of the authors to cite only relevant prior 
-work.
-
-The IEEE Access Department does not publish conference 
-records or proceedings, but can publish articles related to conferences that 
-have undergone rigorous peer review. Minimally, two reviews are required for 
-every article submitted for peer review.
-
-\section{Publication Principles}
-The two types of contents of that are published are; 1) peer-reviewed and 2) 
-archival. The Access Department publishes scholarly 
-articles of archival value as well as tutorial expositions and critical 
-reviews of classical subjects and topics of current interest. 
-
-Authors should consider the following points:
-
-\begin{enumerate}
-\item Technical papers submitted for publication must advance the state of knowledge and must cite relevant prior work. 
-\item The length of a submitted paper should be commensurate with the importance, or appropriate to the complexity, of the work. For example, an obvious extension of previously published work might not be appropriate for publication or might be adequately treated in just a few pages.
-\item Authors must convince both peer reviewers and the editors of the scientific and technical merit of a paper; the standards of proof are higher when extraordinary or unexpected results are reported. 
-\item Because replication is required for scientific progress, papers submitted for publication must provide sufficient information to allow readers to perform similar experiments or calculations and 
-use the reported results. Although not everything need be disclosed, a paper 
-must contain new, useable, and fully described information. For example, a 
-specimen's chemical composition need not be reported if the main purpose of 
-a paper is to introduce a new measurement technique. Authors should expect 
-to be challenged by reviewers if the results are not supported by adequate 
-data and critical details.
-\item Papers that describe ongoing work or announce the latest technical achievement, which are suitable for presentation at a professional conference, may not be appropriate for publication.
-\end{enumerate}
-
-\section{Reference Examples}
-
+\label{sec:intro}
+\PARstart{S}{torage} management courses ask students to reason about
+mechanisms they almost never see operate. Parity reconstruction, degraded
+reads, rebuild onto a hot spare, the queueing delay that grows as a disk
+approaches saturation, the recovery point objective (RPO) and recovery time
+objective (RTO) of a backup plan, and the lag of asynchronous replication
+are normally presented as static diagrams in textbooks such as
+\cite{emc2012ism}. The equipment that exhibits these behaviors, such as
+enterprise disk arrays, storage area network fabrics, and multi-site links,
+is expensive and rarely available in a teaching laboratory.
+
+The software that does exist is not built for teaching. Production RAID
+implementations, such as the Linux multiple-device driver or hardware
+controllers, are correct and fast but opaque: they hide the block layout,
+require root access or real block devices, and give no account of why an
+array reached a particular state. Research simulators such as DiskSim
+\cite{bucy2008disksim} model devices accurately but target researchers and
+provide no learner-facing explanation. Online capacity and IOPS calculators
+return a single number, with no derivation and no way to observe failure.
+
+As a result, no single, lightweight tool lets a learner both (a) compute
+textbook storage metrics with visible formulas and (b) watch the same
+concepts execute on real bytes, with a checkable proof of correctness, on an
+ordinary laptop and without special privileges. This paper addresses that
+gap with StorageLab and asks three research questions:
 \begin{itemize}
-
-\item \emph{Basic format for books:}\\
-J. K. Author, ``Title of chapter in the book,'' in \emph{Title of His Published Book, x}th ed. City of Publisher, (only U.S. State), Country: Abbrev. of Publisher, year, ch. $x$, sec. $x$, pp. \emph{xxx--xxx.}\\
-See \cite{b1,b2}.
-
-\item \emph{Basic format for periodicals:}\\
-J. K. Author, ``Name of paper,'' \emph{Abbrev. Title of Periodical}, vol. \emph{x, no}. $x, $pp\emph{. xxx--xxx, }Abbrev. Month, year, DOI. 10.1109.\emph{XXX}.123456.\\
-See \cite{b3}--\cite{b5}.
-
-\item \emph{Basic format for reports:}\\
-J. K. Author, ``Title of report,'' Abbrev. Name of Co., City of Co., Abbrev. State, Country, Rep. \emph{xxx}, year.\\
-See \cite{b6,b7}.
-
-\item \emph{Basic format for handbooks:}\\
-\emph{Name of Manual/Handbook, x} ed., Abbrev. Name of Co., City of Co., Abbrev. State, Country, year, pp. \emph{xxx--xxx.}\\
-See \cite{b8,b9}.
-
-\item \emph{Basic format for books (when available online):}\\
-J. K. Author, ``Title of chapter in the book,'' in \emph{Title of
-Published Book}, $x$th ed. City of Publisher, State, Country: Abbrev.
-of Publisher, year, ch. $x$, sec. $x$, pp. \emph{xxx--xxx}. [Online].
-Available: \underline{http://www.web.com}\\
-See \cite{b10}--\cite{b13}.
-
-\item \emph{Basic format for journals (when available online):}\\
-J. K. Author, ``Name of paper,'' \emph{Abbrev. Title of Periodical}, vol. $x$, no. $x$, pp. \emph{xxx--xxx}, Abbrev. Month, year. Accessed on: Month, Day, year, DOI: 10.1109.\emph{XXX}.123456, [Online].\\
-See \cite{b14}--\cite{b16}.
-
-\item \emph{Basic format for papers presented at conferences (when available online): }\\
-J.K. Author. (year, month). Title. presented at abbrev. conference title. [Type of Medium]. Available: site/path/file\\
-See \cite{b17}.
-
-\item \emph{Basic format for reports and handbooks (when available online):}\\
-J. K. Author. ``Title of report,'' Company. City, State, Country. Rep. no., (optional: vol./issue), Date. [Online] Available: site/path/file\\
-See \cite{b18,b19}.
-
-\item \emph{Basic format for computer programs and electronic documents (when available online): }\\
-Legislative body. Number of Congress, Session. (year, month day). \emph{Number of bill or resolution}, \emph{Title}. [Type of medium]. Available: site/path/file\\
-\textbf{\emph{NOTE: }ISO recommends that capitalization follow the accepted practice for the language or script in which the information is given.}\\
-See \cite{b20}.
-
-\item \emph{Basic format for patents (when available online):}\\
-Name of the invention, by inventor's name. (year, month day). Patent Number [Type of medium]. Available: site/path/file\\
-See \cite{b21}.
-
-\item \emph{Basic format}\emph{for conference proceedings (published):}\\
-J. K. Author, ``Title of paper,'' in \emph{Abbreviated Name of Conf.}, City of Conf., Abbrev. State (if given), Country, year, pp. \emph{xxxxxx.}\\
-See \cite{b22}.
-
-\item \emph{Example for papers presented at conferences (unpublished):}\\
-See \cite{b23}.
-
-\item \emph{Basic format for patents}$:$\\
-J. K. Author, ``Title of patent,'' U.S. Patent \emph{x xxx xxx}, Abbrev. Month, day, year.\\
-See \cite{b24}.
-
-\item \emph{Basic format for theses (M.S.) and dissertations (Ph.D.):}
-\begin{enumerate}
-\item J. K. Author, ``Title of thesis,'' M.S. thesis, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
-\item J. K. Author, ``Title of dissertation,'' Ph.D. dissertation, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
-\end{enumerate}
-See \cite{b25,b26}.
-
-\item \emph{Basic format for the most common types of unpublished references:}
-\begin{enumerate}
-\item J. K. Author, private communication, Abbrev. Month, year.
-\item J. K. Author, ``Title of paper,'' unpublished.
-\item J. K. Author, ``Title of paper,'' to be published.
-\end{enumerate}
-See \cite{b27}--\cite{b29}.
-
-\item \emph{Basic formats for standards:}
-\begin{enumerate}
-\item \emph{Title of Standard}, Standard number, date.
-\item \emph{Title of Standard}, Standard number, Corporate author, location, date.
-\end{enumerate}
-See \cite{b30,b31}.
-
-\item \emph{Article number in~reference examples:}\\
-See \cite{b32,b33}.
-
-\item \emph{Example when using et al.:}\\
-See \cite{b34}.
-
+\item RQ1: Can a pure-software, file-backed RAID engine demonstrate RAID 0,
+1, 5, 6, and 10 failure and recovery faithfully enough to be verifiable,
+meaning byte-exact recovery within the fault tolerance and correctly
+reported data loss beyond it?
+\item RQ2: Can analytical storage models be presented so that every output
+is traceable to a formula, its units, and its assumptions?
+\item RQ3: Is the system light enough to run interactively on commodity
+hardware?
 \end{itemize}
 
+The contributions of this work are as follows.
+\begin{enumerate}
+\item A block-level, file-backed RAID engine implementing RAID 0, 1, 5
+(rotating XOR parity), 6 (P parity plus a Reed-Solomon Q syndrome over
+GF($2^8$) with reduction polynomial 0x11D and generator 2), and 10. It
+supports degraded reads, hot-spare rebuild streamed as newline-delimited
+JSON (NDJSON), and SHA-256 end-to-end verification.
+\item A closed-form treatment of every RAID 6 two-erasure case (data and
+data, data and P, data and Q, P and Q), each checked by exhaustive fault
+injection.
+\item An integrated set of textbook storage models (an M/M/1 disk, backup
+storage and RPO/RTO compliance, replication latency and lag, and
+likelihood-impact risk), each exposed as a REST endpoint that returns
+values, units, assumptions, and a deterministic, formula-grounded
+explanation.
+\item A layered architecture in which the same calculation functions drive
+two front ends and a test suite.
+\item A validation methodology based on exhaustive enumeration of failure
+subsets, a recoverability predicate checked against observed behavior, and
+hand-calculated formula tests, which produced 1,058 of 1,058 agreements and
+zero silent mismatches.
+\end{enumerate}
+
+The rest of the paper is organized as follows. Section~\ref{sec:related}
+reviews related work. Section~\ref{sec:arch} describes the system
+architecture. Section~\ref{sec:engine} presents the RAID engine and its
+correctness argument. Section~\ref{sec:models} describes the analytical
+models and the explanation layer. Section~\ref{sec:eval} reports the
+validation and results. Section~\ref{sec:disc} discusses limitations, and
+Section~\ref{sec:concl} concludes.
+
+%======================================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{RAID and Erasure Coding}
+Patterson, Gibson, and Katz introduced redundant arrays of inexpensive disks
+and the numbered RAID levels \cite{patterson1988raid}. Chen \emph{et al.}
+later surveyed RAID performance and reliability in depth
+\cite{chen1994raid}. RAID 6 extends single parity to tolerate two
+concurrent failures. Its common construction uses the Reed-Solomon codes of
+\cite{reed1960polynomial}, whose application to RAID-like systems was made
+accessible by Plank's tutorial \cite{plank1997tutorial}. The Linux kernel's
+RAID 6 implementation, described by Anvin \cite{anvin2004raid6}, fixes the
+field GF($2^8$) with the reduction polynomial
+$x^8+x^4+x^3+x^2+1$ and the generator $g=2$. StorageLab adopts the same
+convention, so a student who studies its engine also learns the arithmetic
+used in a widely deployed production system.
+
+\subsection{Disk and Queueing Models}
+Ruemmler and Wilkes describe the components of disk service time, namely
+seek, rotational latency, and transfer, and the trade-offs between simple and
+detailed disk models \cite{ruemmler1994disk}. Classical queueing theory
+\cite{kleinrock1975queueing} and Little's law \cite{little1961proof} relate
+utilization, response time, and the number of requests in the system.
+StorageLab uses the single-server M/M/1 form of these results because it is
+the form taught in introductory storage courses \cite{emc2012ism}.
+DiskSim \cite{bucy2008disksim} provides far higher fidelity but is aimed at
+researchers and requires detailed device parameters.
+
+\subsection{Tools for Systems and Storage Education}
+\todo{Survey simulation and visualization tools used in operating systems,
+storage, and networking education. Cite only works that have been located
+and read.}
+
+\subsection{Positioning}
+DiskSim-class simulators are accurate but research-oriented and offer no
+learner-facing explanations. Linux md and hardware RAID are real but opaque
+and need privileges. Online calculators provide numbers without failure
+behavior or proof. StorageLab combines executable RAID on real bytes,
+hash-verified recovery, formula-traceable models, and explanations in a
+single tool that runs on a laptop.
+
+%======================================================================
+\section{System Architecture}
+\label{sec:arch}
+
+\subsection{Layers}
+StorageLab follows a three-layer design, shown in Fig.~\ref{fig:arch}. A
+React 19 and TypeScript single-page application communicates over JSON
+REST, plus an NDJSON stream for rebuild progress, with a FastAPI back end.
+The routers validate requests, call the calculation modules, and annotate
+the results. Every formula lives in the calculation modules. Saved
+experiments are stored in SQLite, and each live RAID array is stored as a
+directory of disk files.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=2pt, align=center, font=\footnotesize,
+              minimum width=6.6cm, minimum height=0.8cm},
+  sbox/.style={draw, rounded corners=2pt, align=center, font=\footnotesize,
+              minimum width=3.1cm, minimum height=0.8cm},
+  arr/.style={-{Stealth[length=2mm]}, thick},
+  lab/.style={font=\scriptsize, fill=white, inner sep=1pt}]
+\node[box] (ui) {Browser: React 19 + TypeScript, Vite, Recharts};
+\node[box, below=0.8cm of ui] (api) {FastAPI routers (Pydantic validation,\\ units, assumptions, explanation)};
+\node[box, below=0.8cm of api] (mod) {Calculation modules (all formulas,\\ no web or UI imports)};
+\node[sbox, below=0.8cm of mod.south west, anchor=north west] (db) {SQLite via SQLAlchemy\\ (saved scenarios)};
+\node[sbox, below=0.8cm of mod.south east, anchor=north east] (ws) {workspace/$\langle$id$\rangle$/\\ disk\_$i$.bin, spare, meta.json};
+\draw[arr] (ui) -- node[lab] {JSON over HTTP, NDJSON stream} (api);
+\draw[arr] (api) -- node[lab] {plain Python calls} (mod);
+\draw[arr] (mod.south -| db.north) -- (db.north);
+\draw[arr] (mod.south -| ws.north) -- (ws.north);
+\node[draw, dashed, rounded corners=2pt, font=\scriptsize, align=center,
+      right=0.25cm of api, anchor=west, text width=1.2cm] (st) {Streamlit\\ app.py};
+\draw[arr, dashed] (st.south) |- (mod.east);
+\end{tikzpicture}
+\caption{StorageLab architecture. The same calculation modules serve the
+REST API, the alternate Streamlit front end, and the test suite.}
+\label{fig:arch}
+\end{figure}
+
+The code enforces three design rules. First, routers only validate, call,
+and annotate; React pages contain no formulas. Second, each module's
+Streamlit renderer imports Streamlit inside the function, so the calculation
+functions can be imported and tested without any user interface dependency.
+Third, validation runs twice: Pydantic bounds at the API edge and semantic
+checks in the module, such as minimum disk counts, even counts, and
+utilization below one. A module \texttt{ValueError} is mapped to HTTP 422 by a
+global exception handler.
+
+\subsection{Technology Stack}
+Table~\ref{tab:stack} lists the technology stack and the versions measured
+on the evaluation machine. The tracked code consists of 2,677 lines of
+Python, 2,242 lines of TypeScript and TSX, and 1,887 lines of CSS.
+
+\begin{table}[!t]
+\caption{Technology Stack}
+\label{tab:stack}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{2.0cm}p{5.8cm}}
+\toprule
+Layer & Technology \\
+\midrule
+Back end & Python 3.15.2, NumPy 2.5.5, pandas 3.1.1 \\
+API & FastAPI 0.165.0, Pydantic 2.14.4, Uvicorn \\
+Persistence & SQLAlchemy 2.1.9, SQLite (PostgreSQL configurable) \\
+Front end & React 19.3, TypeScript 7.0, Vite 8.3, Recharts 3.11, React Router 7, TanStack Query 5 \\
+Alternate UI & Streamlit 1.67.0, Plotly \\
+Testing & pytest, httpx, Vitest 5, Testing Library, jsdom \\
+Deployment & Docker (Python API image, nginx front-end image), docker-compose \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{REST Interface}
+The API exposes one group of endpoints per module. The RAID group provides
+capacity calculation, failure-state simulation, an interactive XOR
+recovery exercise, and the live-array operations: create an array from an
+uploaded file, inspect its layout, fail a disk, verify, rebuild onto a spare,
+and delete. The disk, backup, replication, and risk groups each provide one
+analysis endpoint, and a scenarios group provides create, read, update,
+delete, clone, compare, and CSV export of saved experiments. Every
+analytical response has the same shape: the computed values, a
+\texttt{units} map, an \texttt{assumptions} list, and an \texttt{explanation}
+object with a summary, the formula, the contributing factors, and the
+assumptions.
+
+\subsection{Front End}
+The interface has one page per module, a saved-experiments page, and a
+methodology page. Charts include a RAID efficiency bar chart and a disk
+response-time curve with a reference line at the 70\% utilization knee and a
+marker at the current operating point. Each module has a collapsible
+quick-start guide and an explanation panel, and the layout is usable at a
+phone width of 390 px without horizontal scrolling. The live-array panel
+reads the rebuild response with a stream reader, splits the NDJSON lines,
+and updates a progress bar; the final line carries the new array layout.
+
+%======================================================================
+\section{Block-Level RAID Engine}
+\label{sec:engine}
+
+The RAID engine is the core technical contribution. It is about 440 lines
+of Python and NumPy.
+
+\subsection{Configuration Space}
+The supported configurations are listed in Table~\ref{tab:config}. The
+limits keep every operation interactive and every exhaustive test
+tractable.
+
+\begin{table}[!t]
+\caption{Engine Configuration Space}
+\label{tab:config}
+\centering
+\footnotesize
+\begin{tabular}{p{2.0cm}p{5.6cm}}
+\toprule
+Parameter & Allowed values \\
+\midrule
+Levels & RAID 0, 1, 5, 6, 10 \\
+Disks $n$ & RAID 0: $n \ge 2$; RAID 1: $n=2$; RAID 5: $n \ge 3$; RAID 6: $n \ge 4$; RAID 10: $n \ge 4$ and even; all $n \le 8$ \\
+Stripe unit $b$ & 512, 1024, 4096, 16384, 65536 bytes \\
+Hot spares & 0 to 2 \\
+File size & 1 byte to 5 MiB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{On-Disk Representation}
+Each array receives a 12-hexadecimal-character identifier and a directory.
+The file \texttt{disk\_$i$.bin} holds the concatenation of disk $i$'s blocks,
+row by row, and each spare is pre-allocated as zero bytes of the same size. A
+metadata file records the level, $n$, $b$, the number of rows, the original
+size and SHA-256 digest, the spares, and an event log.
+
+Failure state is not stored. It is derived: a disk has failed if and only if
+its file does not exist. The physical state of the directory is therefore
+the single source of truth, and fault injection is simply file deletion.
+Identifiers must fully match \texttt{[0-9a-f]\{12\}} and the directory must
+contain the metadata file; any other request returns HTTP 404, which
+prevents path traversal.
+
+\subsection{Striping and Layout}
+Let $k$ be the number of data blocks per row: $k=n$ for RAID 0, $k=1$ for
+RAID 1, $k=n-1$ for RAID 5, $k=n-2$ for RAID 6, and $k=n/2$ for RAID 10. A
+file of $s$ bytes occupies
+\begin{equation}
+\text{rows} = \left\lceil \frac{s}{k\,b} \right\rceil
+\label{eq:rows}
+\end{equation}
+rows. The file is zero-padded to $\text{rows}\cdot k\cdot b$ bytes, viewed
+as an array of $\text{rows}\cdot k$ blocks of $b$ bytes, and each row's $k$
+data blocks are encoded into $n$ stored blocks.
+
+The role of each disk in row $r$ is assigned as follows. In RAID 0, disk
+$d$ holds data block $d$. In RAID 1 and 10, disk $d$ holds data block
+$\lfloor d/2 \rfloor$, so the mirror pairs are $(0,1), (2,3), \dots$. In
+RAID 5, P is on disk $r \bmod n$. In RAID 6, P is on disk $r \bmod n$ and Q
+is on disk $(r+1) \bmod n$. In RAID 5 and 6, data indices $0,\dots,k-1$
+fill the remaining disks in ascending order. Fig.~\ref{fig:layout} shows the
+resulting layouts. This is a simple rotating-parity layout; it is not
+identical to the left-symmetric layout of Linux md.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[x=0.68cm, y=0.46cm, font=\scriptsize]
+\tikzset{cell/.style={draw, minimum width=0.68cm, minimum height=0.46cm, inner sep=0pt}}
+\tikzset{pc/.style={cell, fill=blue!18}, qc/.style={cell, fill=orange!30}, dc/.style={cell}}
+% RAID 5, n = 4
+\node at (1.5,1.1) {\footnotesize RAID 5, $n=4$};
+\foreach \d in {0,...,3} \node at (\d,0.3) {\d};
+\foreach \r/\row in {0/{pc/P$_{0}$,dc/D0,dc/D1,dc/D2}, 1/{dc/D3,pc/P$_{1}$,dc/D4,dc/D5}, 2/{dc/D6,dc/D7,pc/P$_{2}$,dc/D8}, 3/{dc/D9,dc/D10,dc/D11,pc/P$_{3}$}} {
+  \foreach [count=\d from 0] \s/\t in \row {\node[\s] at (\d,-\r-0.5) {\t};}
+}
+% RAID 6, n = 5
+\begin{scope}[xshift=3.3cm]
+\node at (2,1.1) {\footnotesize RAID 6, $n=5$};
+\foreach \d in {0,...,4} \node at (\d,0.3) {\d};
+\foreach \r/\row in {0/{pc/P$_{0}$,qc/Q$_{0}$,dc/D0,dc/D1,dc/D2}, 1/{dc/D3,pc/P$_{1}$,qc/Q$_{1}$,dc/D4,dc/D5}, 2/{dc/D6,dc/D7,pc/P$_{2}$,qc/Q$_{2}$,dc/D8}, 3/{dc/D9,dc/D10,dc/D11,pc/P$_{3}$,qc/Q$_{3}$}, 4/{qc/Q$_{4}$,dc/D12,dc/D13,dc/D14,pc/P$_{4}$}} {
+  \foreach [count=\d from 0] \s/\t in \row {\node[\s] at (\d,-\r-0.5) {\t};}
+}
+\end{scope}
+\end{tikzpicture}
+\caption{Rotating parity layouts used by the engine for RAID 5 with four
+disks and RAID 6 with five disks. Columns are disks and rows are stripes. D$i$ is the $i$-th data block of the file;
+P$_r$ and Q$_r$ are the parity and syndrome of row $r$.}
+\label{fig:layout}
+\end{figure}
+
+\subsection{Parity Mathematics}
+For RAID 5 and 6 the parity block is the bytewise exclusive-or of the row's
+data blocks:
+\begin{equation}
+P = D_0 \oplus D_1 \oplus \dots \oplus D_{k-1}.
+\label{eq:p}
+\end{equation}
+RAID 6 adds the Q syndrome over GF($2^8$) with reduction polynomial
+$x^8+x^4+x^3+x^2+1$ (0x11D) and generator $g = 2$:
+\begin{equation}
+Q = \bigoplus_{i=0}^{k-1} g^{i} \cdot D_i ,
+\label{eq:q}
+\end{equation}
+where multiplication is in GF($2^8$) and is applied bytewise.
+
+Field arithmetic uses log and antilog tables built once at import time by
+repeated left shift with reduction by 0x11D on overflow. The antilog table
+has 512 entries, doubled so that the sum of two logarithms never needs a
+modulo. Multiplying a whole block by a constant $c$ is a single vectorized
+NumPy expression, $\mathrm{EXP}[\mathrm{LOG}[\text{block}] +
+\mathrm{LOG}[c]]$, applied to the non-zero bytes; there is no per-byte
+Python loop. The inverse is $g^{-1}(v) = \mathrm{EXP}[(255 -
+\mathrm{LOG}[v]) \bmod 255]$.
+
+\subsection{Row Reconstruction}
+Reconstruction works one row at a time. Given the stored blocks of a row
+with some blocks missing, the engine first checks the recoverability
+predicate of Section~\ref{sec:pred} and raises a data-loss error if it
+fails. It then collects the surviving data blocks, P, and Q, and solves for
+the lost data indices using the cases below.
+
+One data block $D_x$ lost and P present:
+\begin{equation}
+D_x = P \oplus \bigoplus_{i \ne x} D_i .
+\label{eq:rec1}
+\end{equation}
+
+One data block $D_x$ lost together with P, and Q present:
+\begin{equation}
+D_x = g^{-x} \cdot \Bigl( Q \oplus \bigoplus_{i \ne x} g^{i} D_i \Bigr).
+\label{eq:rec2}
+\end{equation}
+
+Two data blocks $D_x$ and $D_y$ lost. Define the partial parity and
+syndrome of the surviving data,
+\begin{align}
+P_{xy} &= P \oplus \bigoplus_{i \notin \{x,y\}} D_i = D_x \oplus D_y, \\
+Q_{xy} &= Q \oplus \bigoplus_{i \notin \{x,y\}} g^{i} D_i = g^{x} D_x \oplus g^{y} D_y .
+\end{align}
+Multiplying the first equation by $g^{y}$ and adding it to the second
+eliminates $D_y$:
+\begin{equation}
+D_x = \frac{Q_{xy} \oplus g^{y} P_{xy}}{g^{x} \oplus g^{y}}, \qquad
+D_y = P_{xy} \oplus D_x .
+\label{eq:rec3}
+\end{equation}
+
+If only P, only Q, or both are lost, no data is lost and they are
+recomputed from (\ref{eq:p}) and (\ref{eq:q}). For RAID 1 and 10, a lost
+block is copied from the surviving member of its mirror pair. After the data
+are recovered, the full row is re-encoded, and a rebuild takes the block
+that belongs to the target disk.
+
+The denominator in (\ref{eq:rec3}) is never zero. Because $g=2$ is a
+primitive element of GF($2^8$), its powers $g^0,\dots,g^{254}$ are distinct.
+With $n \le 8$, RAID 6 has $k \le 6 < 255$ data indices, so $g^x \ne g^y$
+and therefore $g^x \oplus g^y \ne 0$ for every $x \ne y$. The two-erasure
+system always has a unique solution.
+
+Because parity rotates, one failed physical disk holds data in some rows
+and P or Q in others. The engine therefore solves each row independently.
+For this reason, a RAID 6 array with two failed disks exercises all four
+erasure cases (data and data, data and P, data and Q, P and Q) across its
+rows, and the exhaustive campaign in Section~\ref{sec:eval} tests all of
+them.
+
+\subsection{Recoverability Predicate}
+\label{sec:pred}
+Let $M$ be the set of missing disks. The engine declares the array
+recoverable when
+\begin{equation}
+\text{rec}(M) =
+\begin{cases}
+M = \emptyset & \text{RAID 0},\\
+\nexists j : \{2j, 2j+1\} \subseteq M & \text{RAID 1, 10},\\
+|M| \le 1 & \text{RAID 5},\\
+|M| \le 2 & \text{RAID 6}.
+\end{cases}
+\label{eq:pred}
+\end{equation}
+The array is Healthy if $M$ is empty, Degraded if $M$ is recoverable, and
+Failed otherwise. The guaranteed fault tolerance shown in the interface is
+0, 1, 1, 2, and 1 disks for RAID 0, 1, 5, 6, and 10. RAID 10 can survive up
+to $n/2$ failures when each failure is in a different mirror pair.
+
+\subsection{Operations}
+\emph{Create} validates the configuration, pads the file, encodes all rows
+into an $(n, \text{rows}, b)$ array, writes each disk, allocates the spares,
+and records the SHA-256 digest of the original file.
+
+\emph{Fail} deletes a disk file and appends an event to the log.
+
+\emph{Read} checks recoverability, loads the surviving disks, recovers each
+row, emits the data blocks in index order, and truncates the result to the
+original size.
+
+\emph{Verify} returns the state, the missing disks, the original and the
+read SHA-256 digests, whether they match, whether data was lost, and a
+message such as ``Read in degraded mode: Disk 2 reconstructed on the fly''.
+
+\emph{Rebuild} validates eagerly (the disk must be missing, the missing set
+recoverable, and a spare available) and then returns a generator. The
+generator writes the recovered row blocks into the spare file and reports
+progress after each row. Only when the last row is written is the spare
+renamed to \texttt{disk\_$i$.bin}. An interrupted rebuild therefore never
+presents a half-written disk as healthy. The API throttles progress to about
+50 updates and spreads an artificial delay of 2.5 s across the rows so that
+the progress bar is visible; the engine timings in Section~\ref{sec:eval}
+exclude this delay.
+
+\emph{Layout} returns the role, label (D, D$'$, P, or Q), and the first four
+bytes in hexadecimal of every block for up to 12 rows, so the interface
+displays real stored bytes rather than a mock-up (Fig.~\ref{fig:live}).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig_live_array.png}
+\caption{Live array panel. Each cell shows the role of a stored block and
+its first bytes as read from the disk file.}
+\label{fig:live}
+\end{figure}
+
+%======================================================================
+\section{Analytical Models and Explanation Layer}
+\label{sec:models}
+
+\subsection{RAID Capacity Calculator}
+For $N$ disks of size $S$, the calculator reports the values in
+Table~\ref{tab:raidcap}, using the write penalties of \cite{emc2012ism}. It
+accepts 2 to 32 disks. Efficiency is usable capacity divided by raw
+capacity. The failure simulation reports one of four states: Healthy,
+Degraded, Rebuilding (only when the array is Degraded and a hot spare is
+enabled), and Failed, which is never rebuilt. With $f$ failed disks and a
+sequential rebuild throughput $T$ in MB/s (200 MB/s by default), the rebuild
+time in hours is
+\begin{equation}
+t_{\text{rebuild}} = \frac{S \cdot f \cdot 1024^2}{T \cdot 3600},
+\label{eq:rebuild}
+\end{equation}
+with $S$ in TB. An XOR exercise lets the learner remove one of three binary
+blocks and recover it as the XOR of the parity and the survivors.
+
+\begin{table}[!t]
+\caption{RAID Capacity Model}
+\label{tab:raidcap}
+\centering
+\footnotesize
+\begin{tabular}{lllc}
+\toprule
+Level & Usable & Fault tolerance & Write penalty \\
+\midrule
+RAID 0 & $N S$ & 0 & 1 \\
+RAID 1 & $N S/2$ & mirror-dependent & 2 \\
+RAID 5 & $(N-1) S$ & 1 & 4 \\
+RAID 6 & $(N-2) S$ & 2 & 6 \\
+RAID 10 & $N S/2$ & mirror-dependent & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Disk Performance}
+A single disk is modeled as an M/M/1 queue \cite{kleinrock1975queueing}.
+With rotational speed RPM, average seek time $T_{\text{seek}}$, transfer rate
+$X$ in MB/s, and block size $B$ in KB, the times in milliseconds are
+\begin{align}
+T_{\text{rot}} &= \frac{30000}{\text{RPM}}, \qquad
+T_{\text{xfer}} = \frac{B/1024}{X} \cdot 1000, \\
+T_s &= T_{\text{seek}} + T_{\text{rot}} + T_{\text{xfer}} ,
+\end{align}
+where $T_{\text{rot}}$ is half a revolution. The maximum throughput is
+$1000/T_s$ IOPS. For an arrival rate $\lambda$ in IOPS, the utilization,
+response time, queue length, and number in the system are
+\begin{equation}
+U = \lambda T_s, \quad R = \frac{T_s}{1-U}, \quad L_q = \frac{U^2}{1-U}, \quad
+N = \lambda R = \frac{U}{1-U},
+\label{eq:mm1}
+\end{equation}
+with $T_s$ in seconds for $U$; the last identity is Little's law
+\cite{little1961proof}. Inputs with $U \ge 1$ are rejected, and the error
+message gives the maximum stable arrival rate. The interface plots $R$ at 91
+utilization points from 5\% to 95\%.
+
+\subsection{Backup Planner}
+The inputs are the data size $D$ in GB, the daily change rate $c$ in
+percent, the number of retained restore points $R$, the throughput in MB/s,
+the RPO, the RTO, and the backup interval. With daily change $C = D c/100$,
+the three strategies compare as shown in Table~\ref{tab:backupmodel}.
+Backup or restore duration in hours is the volume in GB times 1024, divided
+by the throughput and by 3600. The RPO is met if the interval does not
+exceed the RPO, and the RTO is met if the restore time does not exceed the
+RTO. Among the strategies that meet both, the planner recommends the one
+with the least retained storage. If none meets both, it says so explicitly
+and suggests increasing the backup frequency or throughput, or revising the
+objectives.
+
+\begin{table}[!t]
+\caption{Backup Strategy Model}
+\label{tab:backupmodel}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llll}
+\toprule
+ & Full & Incremental & Differential \\
+\midrule
+Retained & $R D$ & $D + (R-1) C$ & $D + \sum_{j=1}^{R-1} \min(jC, D)$ \\
+Per backup & $D$ & $C$ & $\min((R-1)C, D)$ \\
+Restore data & $D$ & $D + (R-1) C$ & $D + \min((R-1)C, D)$ \\
+Restore steps & 1 & $R$ & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Replication}
+For a distance $d$ in km, the propagation round-trip time is $2 \cdot d
+\cdot 0.005$ ms, using about 5~$\mu$s/km in fiber, and the total RTT adds the
+network RTT. A write of $W$ KB is $W \cdot 1024 \cdot 8$ bits, and its
+transmit time on a link of $L$ Mbps is the bit count divided by $L \cdot
+10^6$, in milliseconds. The link utilization at a given write rate is
+\begin{equation}
+\rho = \frac{\text{IOPS} \cdot \text{bits}}{10^6 \cdot L},
+\end{equation}
+and a saturated link ($\rho \ge 1$) is rejected. Synchronous replication has
+response time equal to the local write time plus the total RTT, with zero
+lag and an RPO of zero. Asynchronous replication responds after the local
+write, and its lag, which is also its RPO, is
+\begin{equation}
+\text{lag} = \frac{\text{RTT}_{\text{total}}}{2} + \frac{t_{\text{transmit}}}{1-\rho},
+\label{eq:lag}
+\end{equation}
+where the second term is the M/M/1 sojourn time on the link. The number of
+writes at risk is the IOPS times the lag.
+
+\subsection{Risk}
+The risk score is likelihood times impact, each an integer from 1 to 5. The
+bands are Low (1 to 5), Medium (6 to 10), High (11 to 15), and Critical
+(16 to 25). Mitigations are mapped per threat (hardware failure,
+ransomware, unauthorized access), with a generic fallback.
+
+\subsection{Unit Conventions}
+Storage sizes are binary: 1 TB is $1024^2$ MB in the rebuild model and 1 GB
+is 1024 MB in the backup model. Network rates are decimal: 1 Mbps is $10^6$
+bit/s, while a write size uses 1 KB = 1024 B. All times are converted to
+consistent units before division: milliseconds within a disk operation and
+hours for backup and rebuild.
+
+\subsection{Explanation Layer}
+Each module returns an explanation object with a summary, the formula, the
+contributing factors, and the assumptions. The text is built from the same
+computed values that the response returns, so it is always consistent with
+the numbers. The layer is a deterministic, rule-based template system, not
+a learned model, which makes every explanation reproducible and checkable
+against the formulas in this section.
+
+%======================================================================
+\section{Validation and Results}
+\label{sec:eval}
+
+All measurements were taken on an Apple M5 laptop with 16 GB of RAM, running
+macOS, Python 3.15.2, and NumPy 2.5.5. Each timing is the median of five
+runs. Every number in this section is reproduced by a single measurement
+script in the project repository.
+
+\subsection{Automated Tests}
+The Python suite contains 62 tests, which pass in 0.80 s, and the front end
+has 11 Vitest tests, which also pass. Module tests check the RAID capacity
+of every level, invalid configurations, failure states, write penalties, XOR
+recovery, rebuild time, the disk formulas against hand-calculated values,
+queue length, rejection of unstable utilization, backup storage and RPO/RTO
+compliance, replication distance and lag units, link saturation, and risk
+bands. The RAID engine tests check that a write followed by a read returns
+identical bytes for every level; that every combination of failures up to
+the level's tolerance, including every pair for RAID 6, is read in degraded
+mode and rebuilt onto spares with a matching SHA-256 digest and a Healthy
+state; that failures beyond tolerance report data loss and refuse rebuild;
+that each RAID 5 parity block equals the XOR of its row and that parity
+rotates; and the GF inverse and scaling identities. API tests exercise the
+end-to-end flow of create, fail, verify, rebuild, and verify.
+
+\subsection{Exhaustive Fault-Injection Campaign}
+For each of 14 configurations, every non-empty subset of disks
+($2^n - 1$ subsets) was failed on a fresh array holding a 16 KiB random file
+with a 512 B stripe unit. After a read, the SHA-256 digest was compared with
+the original, and each outcome was classified as recovered, reported data
+loss, or silent mismatch, meaning the read succeeded but the bytes differ.
+The observed outcome was also compared with the predicate (\ref{eq:pred}).
+
+Table~\ref{tab:campaign} shows the results. Of 1,058 failure combinations,
+219 were recovered byte-exactly, 839 were correctly reported as data loss,
+and none produced a silent mismatch. The predicate agreed with the observed
+outcome in all 1,058 cases.
+
+The recovered counts also match the combinatorics, which serves as a sanity
+check. RAID 5 recovers exactly the $n$ single failures. RAID 6 recovers the
+$\binom{n}{1} + \binom{n}{2}$ subsets of size one or two, for example
+$8 + 28 = 36$ at $n=8$. RAID 10 recovers $3^{n/2} - 1$ subsets, because each
+mirror pair can lose nothing, its first member, or its second member, which
+gives 80 at $n = 8$. This answers RQ1: within its tolerance the engine
+recovers byte-exactly, and beyond it the engine reports data loss rather
+than returning wrong data.
+
+\begin{table}[!t]
+\caption{Exhaustive Fault-Injection Results}
+\label{tab:campaign}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Config. & Subsets & Recovered & Data loss & Silent & Agreement \\
+\midrule
+RAID 0, $n$=2 & 3 & 0 & 3 & 0 & 3/3 \\
+RAID 0, $n$=4 & 15 & 0 & 15 & 0 & 15/15 \\
+RAID 1, $n$=2 & 3 & 2 & 1 & 0 & 3/3 \\
+RAID 5, $n$=3 & 7 & 3 & 4 & 0 & 7/7 \\
+RAID 5, $n$=4 & 15 & 4 & 11 & 0 & 15/15 \\
+RAID 5, $n$=6 & 63 & 6 & 57 & 0 & 63/63 \\
+RAID 5, $n$=8 & 255 & 8 & 247 & 0 & 255/255 \\
+RAID 6, $n$=4 & 15 & 10 & 5 & 0 & 15/15 \\
+RAID 6, $n$=5 & 31 & 15 & 16 & 0 & 31/31 \\
+RAID 6, $n$=6 & 63 & 21 & 42 & 0 & 63/63 \\
+RAID 6, $n$=8 & 255 & 36 & 219 & 0 & 255/255 \\
+RAID 10, $n$=4 & 15 & 8 & 7 & 0 & 15/15 \\
+RAID 10, $n$=6 & 63 & 26 & 37 & 0 & 63/63 \\
+RAID 10, $n$=8 & 255 & 80 & 175 & 0 & 255/255 \\
+\midrule
+Total & 1,058 & 219 & 839 & 0 & 1,058/1,058 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Model Case Studies}
+\subsubsection{RAID Capacity}
+For eight 4 TB disks, the calculator reports usable capacities of 32, 16,
+28, 24, and 16 TB for RAID 0, 1, 5, 6, and 10, corresponding to
+efficiencies of 100\%, 50\%, 87.5\%, 75\%, and 50\% and write penalties of
+1, 2, 4, 6, and 2.
+
+\subsubsection{Disk Performance}
+For a 7200 RPM disk with a 4 ms seek, a 150 MB/s transfer rate, and 4 KB
+blocks, the service time is 8.193 ms and the maximum throughput is 122.06
+IOPS. Table~\ref{tab:disk} shows the metrics as the arrival rate rises. The
+step from 61\% to 82\% utilization doubles the response time from 21.3 ms
+to 45.3 ms, which illustrates the knee of the curve, and an arrival rate of
+125 IOPS is rejected because it would give $U = 102.4\%$.
+
+\begin{table}[!t]
+\caption{Disk Metrics at 7200 RPM ($T_s$ = 8.193 ms)}
+\label{tab:disk}
+\centering
+\footnotesize
+\begin{tabular}{rrrrr}
+\toprule
+$\lambda$ (IOPS) & $U$ (\%) & $R$ (ms) & $L_q$ & $N$ \\
+\midrule
+0 & 0.00 & 8.193 & 0.000 & 0.000 \\
+25 & 20.48 & 10.303 & 0.053 & 0.258 \\
+50 & 40.96 & 13.877 & 0.284 & 0.694 \\
+75 & 61.45 & 21.250 & 0.979 & 1.594 \\
+100 & 81.93 & 45.331 & 3.714 & 4.533 \\
+125 & \multicolumn{4}{l}{rejected ($U = 102.4\%$)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Spindle speed has a strong effect near saturation (Fig.~\ref{fig:rpm} and
+Table~\ref{tab:rpm}). At 100 IOPS, the 1.4 ms difference in service time
+between 7200 and 5400 RPM produces a five-fold difference in response time,
+from 45.3 ms to 229.0 ms.
+
+\begin{table}[!t]
+\caption{Effect of Spindle Speed at $\lambda$ = 100 IOPS}
+\label{tab:rpm}
+\centering
+\footnotesize
+\begin{tabular}{rrrrr}
+\toprule
+RPM & $T_{\text{rot}}$ (ms) & $T_s$ (ms) & $U$ (\%) & $R$ (ms) \\
+\midrule
+5400 & 5.556 & 9.582 & 95.8 & 229.004 \\
+7200 & 4.167 & 8.193 & 81.9 & 45.331 \\
+10000 & 3.000 & 7.026 & 70.3 & 23.625 \\
+15000 & 2.000 & 6.026 & 60.3 & 15.164 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[x=0.040cm, y=0.034cm, font=\scriptsize]
+\draw[->] (0,0) -- (178,0) node[below left, yshift=-8pt] {Arrival rate $\lambda$ (IOPS)};
+\draw[->] (0,0) -- (0,128) node[above, xshift=12pt] {$R$ (ms)};
+\foreach \x in {0,40,80,120,160} \draw (\x,0) -- (\x,-2) node[below] {\x};
+\foreach \y in {0,20,40,60,80,100,120} \draw (0,\y) -- (-2,\y) node[left] {\y};
+\draw[gray!30] (0,20) -- (170,20) (0,40) -- (170,40) (0,60) -- (170,60) (0,80) -- (170,80) (0,100) -- (170,100) (0,120) -- (170,120);
+\draw[thick, red!75!black, domain=0:96.0, samples=80] plot (\x, {9.582/(1-\x*9.582/1000)});
+\draw[thick, blue!75!black, domain=0:113.7, samples=80] plot (\x, {8.193/(1-\x*8.193/1000)});
+\draw[thick, green!50!black, domain=0:134.0, samples=80] plot (\x, {7.026/(1-\x*7.026/1000)});
+\draw[thick, orange!90!black, domain=0:157.6, samples=80] plot (\x, {6.026/(1-\x*6.026/1000)});
+\node[red!75!black, anchor=east] at (95,120) {5400};
+\node[blue!75!black, anchor=west] at (114,118) {7200};
+\node[green!50!black, anchor=west] at (134,115) {10000};
+\node[orange!90!black, anchor=north west] at (150,60) {15000 RPM};
+\fill[blue!75!black] (100,45.331) circle (1.6pt);
+\end{tikzpicture}
+\caption{Response time against arrival rate for four spindle speeds (4 ms
+seek, 150 MB/s, 4 KB blocks). The dot marks 100 IOPS at 7200 RPM.}
+\label{fig:rpm}
+\end{figure}
+
+\subsubsection{Backup}
+For 1000 GB of data with 5\% daily change, seven retained points, a
+throughput of 100 MB/s, daily backups, an RPO of 24 h, and an RTO of 4 h, the
+planner produces Table~\ref{tab:backup}. All three strategies meet both
+objectives, and the planner recommends incremental backup because it needs
+the least retained storage. With an RPO of 1 h and daily backups, no
+strategy is compliant, and the system says so explicitly.
+
+\begin{table*}[!t]
+\caption{Backup Case Study (1000 GB, 5\%/day, 7 Points, 100 MB/s, RPO 24 h, RTO 4 h)}
+\label{tab:backup}
+\centering
+\footnotesize
+\begin{tabular}{lrrrrrcc}
+\toprule
+Strategy & Retained (GB) & Backup (h) & Restore (h) & Restore data (GB) & Steps & RPO met & RTO met \\
+\midrule
+Full & 7000 & 2.844 & 2.844 & 1000 & 1 & Yes & Yes \\
+Incremental & 1300 & 0.142 & 3.698 & 1300 & 7 & Yes & Yes \\
+Differential & 2050 & 0.853 & 3.698 & 1300 & 2 & Yes & Yes \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsubsection{Replication}
+With a 2 ms local write, a 2 ms network RTT, a 1000 Mbps link, 500 IOPS, and
+8 KB writes ($\rho = 3.28\%$), synchronous response time grows linearly with
+distance while asynchronous response stays at the local write time
+(Table~\ref{tab:repl} and Fig.~\ref{fig:repl}). The asynchronous lag, and
+therefore the RPO, also grows with distance. At 100 km, reducing the
+bandwidth raises the lag from 1.568 ms at 1000 Mbps ($\rho = 3.3\%$) to
+2.475 ms at 100 Mbps ($\rho = 32.8\%$), 5.303 ms at 50 Mbps
+($\rho = 65.5\%$), and 10.562 ms at 40 Mbps ($\rho = 81.9\%$). Below about
+32.8 Mbps the link saturates and the input is rejected.
+
+\begin{table}[!t]
+\caption{Replication Against Distance}
+\label{tab:repl}
+\centering
+\footnotesize
+\begin{tabular}{rrrr}
+\toprule
+Distance & Sync. response & Async. response & Async. lag/RPO \\
+(km) & (ms) & (ms) & (ms) \\
+\midrule
+0 & 4.000 & 2.000 & 1.068 \\
+10 & 4.100 & 2.000 & 1.118 \\
+100 & 5.000 & 2.000 & 1.568 \\
+500 & 9.000 & 2.000 & 3.568 \\
+1000 & 14.000 & 2.000 & 6.068 \\
+5000 & 54.000 & 2.000 & 26.068 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[x=0.00135cm, y=0.068cm, font=\scriptsize]
+\draw[->] (0,0) -- (5300,0) node[below left, yshift=-8pt] {Distance (km)};
+\draw[->] (0,0) -- (0,62) node[above, xshift=10pt] {Time (ms)};
+\foreach \x in {0,1000,2000,3000,4000,5000} \draw (\x,0) -- (\x,-1) node[below] {\x};
+\foreach \y in {0,10,20,30,40,50,60} \draw (0,\y) -- (-50,\y) node[left] {\y};
+\draw[gray!30] (0,10) -- (5100,10) (0,20) -- (5100,20) (0,30) -- (5100,30) (0,40) -- (5100,40) (0,50) -- (5100,50) (0,60) -- (5100,60);
+\draw[thick, red!75!black] (0,4) -- (5000,54) node[above left] {sync. response};
+\draw[thick, blue!75!black] (0,1.068) -- (5000,26.068) node[above left] {async. lag (RPO)};
+\draw[thick, green!50!black, dashed] (0,2) -- (5000,2) node[above left] {async. response};
+\end{tikzpicture}
+\caption{Synchronous response time, asynchronous response time, and
+asynchronous lag against distance (1000 Mbps, 500 IOPS, 8 KB writes).}
+\label{fig:repl}
+\end{figure}
+
+\subsection{Engine Performance}
+Table~\ref{tab:perf} reports engine timings for a 4 MiB random file,
+excluding the interface's artificial rebuild delay. Every operation
+finishes within 25 ms, well below interactive thresholds, on a laptop with
+no special privileges, which answers RQ3. RAID 6 encoding and recovery take
+about four to five times longer than RAID 5 because of the GF($2^8$)
+multiplications, which are table lookups, compared with a single XOR for P.
+This mirrors the real computational overhead of RAID 6 and its higher write
+penalty. The measured ratio of raw to file bytes is slightly above the
+theoretical $n/k$ (1.333 for RAID 5 with four disks and 1.667 for RAID 6
+with five disks) because of zero padding in the last row. The padding grows
+with the stripe unit, which gives a concrete way to discuss internal
+fragmentation. These timings are in-memory NumPy timings on page-cached
+files, not device benchmarks.
+
+\begin{table*}[!t]
+\caption{Engine Timings for a 4 MiB File (Seconds, Median of 5 Runs)}
+\label{tab:perf}
+\centering
+\footnotesize
+\begin{tabular}{llrrrrrrr}
+\toprule
+Level, $n$ & Unit & Rows & Encode & Read & Degraded read & Rebuild 1 disk & Read, 2 failed & Raw/file bytes \\
+\midrule
+RAID 0, 4 & 4 KiB & 256 & 0.003 & 0.001 & -- & -- & -- & 1.000 \\
+RAID 0, 4 & 64 KiB & 16 & 0.002 & 0.001 & -- & -- & -- & 1.000 \\
+RAID 1, 2 & 4 KiB & 1024 & 0.005 & 0.002 & 0.003 & 0.002 & -- & 2.000 \\
+RAID 1, 2 & 64 KiB & 64 & 0.004 & 0.001 & 0.001 & 0.001 & -- & 2.000 \\
+RAID 5, 4 & 4 KiB & 342 & 0.004 & 0.001 & 0.004 & 0.003 & -- & 1.336 \\
+RAID 5, 4 & 64 KiB & 22 & 0.004 & 0.001 & 0.002 & 0.002 & -- & 1.375 \\
+RAID 6, 5 & 4 KiB & 342 & 0.019 & 0.001 & 0.017 & 0.017 & 0.025 & 1.670 \\
+RAID 6, 5 & 64 KiB & 22 & 0.015 & 0.001 & 0.013 & 0.013 & 0.019 & 1.719 \\
+RAID 10, 4 & 4 KiB & 512 & 0.004 & 0.001 & 0.002 & 0.002 & -- & 2.000 \\
+RAID 10, 4 & 64 KiB & 32 & 0.003 & 0.001 & 0.001 & 0.001 & -- & 2.000 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Demonstration Scenario}
+A typical classroom session runs as follows. The instructor creates a RAID 5
+array with four disks, a 4 KiB stripe unit, and one spare, and shows P
+rotating across the disks row by row. Failing Disk 2 moves the array to the
+Degraded state, yet the SHA-256 digest still matches because the missing
+blocks are reconstructed on every read. Rebuilding Disk 2 streams a progress
+bar, the spare becomes Disk 2, the state returns to Healthy, and the digest
+matches again. Failing two disks of a RAID 5 array produces a data-loss
+report and a refused rebuild, whereas the same two failures on a five-disk
+RAID 6 array still give a matching digest. The session continues with the
+capacity comparison and the XOR exercise, raises the disk arrival rate past
+the 70\% knee, and shows a backup plan with an RPO of 1 h failing under
+daily backups and passing under hourly backups.
+
+%======================================================================
+\section{Discussion and Limitations}
+\label{sec:disc}
+
+The results answer the three research questions within clear limits, which
+are stated here.
+
+\subsection{RAID Engine}
+The engine corrects erasures, meaning disks known to be missing, not silent
+errors. It keeps no per-block checksums, so it cannot detect or locate bit
+rot inside a surviving disk; the SHA-256 digest only detects end-to-end
+corruption. The engine is file-backed rather than block-device-backed and
+models no controller cache, write hole, partial-stripe read-modify-write, or
+concurrent I/O. Whole disks are loaded into memory, so scalability relies on
+the 5 MiB and eight-disk limits. The parity layout is a simple rotation
+rather than the left-symmetric layout of Linux md or a vendor layout. The
+metadata file has no locking, so concurrent changes to the same array could
+race; this is acceptable for a single-user teaching tool. Finally, the API
+slows rebuilds artificially so that progress is visible.
+
+\subsection{Analytical Models}
+The disk model is M/M/1 with exponential service. Real disk service is
+closer to a general distribution, so an M/G/1 model or measured traces would
+be more faithful, and the model covers a single disk with no scheduler,
+cache, or array-level aggregation. The write penalty is reported but not yet
+combined with disk IOPS. In the backup model with a fixed daily change,
+incremental and differential backups restore the same data volume and
+differ only in restore steps and retained storage; RPO compliance depends
+only on the interval, not on the backup duration; and deduplication and
+compression are not modeled. The replication model assumes one transfer per
+write, a constant propagation speed, and no protocol overhead, and models
+the link as an M/M/1 queue. Risk scores come from judgment rather than
+measured frequencies, and the rebuild time assumes a constant sequential
+throughput.
+
+\subsection{Evaluation}
+No user study has been conducted yet, so this paper makes claims only about
+correctness and performance, not about learning outcomes.
+\todo{Add the results of a pre-test and post-test study with control and
+treatment groups, and a System Usability Scale questionnaire, if run
+before submission.}
+
+\subsection{Security}
+The system has no authentication, restricts cross-origin requests to local
+origins, limits uploads to 5 MiB, and validates array identifiers to
+prevent path traversal. It is intended for local or classroom deployment.
+
+%======================================================================
+\section{Conclusion and Future Work}
+\label{sec:concl}
+StorageLab shows that a lightweight, pure-software laboratory can make
+storage concepts both computable and observable. Its file-backed RAID
+engine stripes real data with RAID 0, 1, 5, 6, and 10, reconstructs every
+single and double erasure in closed form, and proves each recovery with a
+SHA-256 match. An exhaustive campaign over 1,058 failure combinations found
+no silent corruption and complete agreement with the recoverability
+predicate. The analytical models return values with units, assumptions, and
+formula-grounded explanations, and every engine operation on a 4 MiB file
+completes within 25 ms on a laptop.
+
+Future work includes, first and most important, a pedagogical evaluation
+with pre-tests and post-tests, control and treatment groups, and a usability
+questionnaire. Further extensions are per-block checksums and scrubbing, so
+that the engine can demonstrate silent-corruption detection and correction
+with RAID 6; array-level IOPS that combine the write penalty with disk
+performance, through the effective front-end rate
+$n \cdot \text{IOPS}_{\text{disk}} / (r + w \cdot \text{penalty})$ for read
+and write fractions $r$ and $w$; an M/G/1 disk model and workload traces;
+general Reed-Solomon $(k+m)$ codes, locally repairable codes, and declustered
+parity rebuild; a rebuild-window risk model based on the mean time to
+failure and the mean time to repair; and a multi-user deployment with
+authentication and per-user workspaces.
+
+\section*{Acknowledgment}
+\todo{Acknowledgments, if any.}
+
+%======================================================================
 \begin{thebibliography}{00}
 
-\bibitem{b1} G. O. Young, ``Synthetic structure of industrial plastics,'' in \emph{Plastics,} 2\textsuperscript{nd} ed., vol. 3, J. Peters, Ed. New York, NY, USA: McGraw-Hill, 1964, pp. 15--64.
+\bibitem{patterson1988raid}
+D. A. Patterson, G. Gibson, and R. H. Katz, ``A case for redundant arrays of
+inexpensive disks (RAID),'' in \emph{Proc. ACM SIGMOD Int. Conf. Manage.
+Data}, Chicago, IL, USA, 1988, pp. 109--116.
 
-\bibitem{b2} W.-K. Chen, \emph{Linear Networks and Systems.} Belmont, CA, USA: Wadsworth, 1993, pp. 123--135.
+\bibitem{chen1994raid}
+P. M. Chen, E. K. Lee, G. A. Gibson, R. H. Katz, and D. A. Patterson,
+``RAID: High-performance, reliable secondary storage,'' \emph{ACM Comput.
+Surv.}, vol. 26, no. 2, pp. 145--185, Jun. 1994.
 
-\bibitem{b3} J. U. Duncombe, ``Infrared navigation---Part I: An assessment of feasibility,'' \emph{IEEE Trans. Electron Devices}, vol. ED-11, no. 1, pp. 34--39, Jan. 1959, 10.1109/TED.2016.2628402.
+\bibitem{reed1960polynomial}
+I. S. Reed and G. Solomon, ``Polynomial codes over certain finite fields,''
+\emph{J. Soc. Ind. Appl. Math.}, vol. 8, no. 2, pp. 300--304, 1960.
 
-\bibitem{b4} E. P. Wigner, ``Theory of traveling-wave optical laser,'' \emph{Phys. Rev}., vol. 134, pp. A635--A646, Dec. 1965.
+\bibitem{plank1997tutorial}
+J. S. Plank, ``A tutorial on Reed-Solomon coding for fault-tolerance in
+RAID-like systems,'' \emph{Softw. Pract. Exper.}, vol. 27, no. 9,
+pp. 995--1012, 1997.
 
-\bibitem{b5} E. H. Miller, ``A note on reflector arrays,'' \emph{IEEE Trans. Antennas Propagat}., to be published.
+\bibitem{anvin2004raid6}
+H. P. Anvin, ``The mathematics of RAID-6,'' 2004. [Online]. Available:
+https://www.kernel.org/pub/linux/kernel/people/hpa/raid6.pdf
 
-\bibitem{b6} E. E. Reber, R. L. Michell, and C. J. Carter, ``Oxygen absorption in the earth's atmosphere,'' Aerospace Corp., Los Angeles, CA, USA, Tech. Rep. TR-0200 (4230-46)-3, Nov. 1988.
+\bibitem{little1961proof}
+J. D. C. Little, ``A proof for the queuing formula: $L = \lambda W$,''
+\emph{Oper. Res.}, vol. 9, no. 3, pp. 383--387, 1961.
 
-\bibitem{b7} J. H. Davis and J. R. Cogdell, ``Calibration program for the 16-foot antenna,'' Elect. Eng. Res. Lab., Univ. Texas, Austin, TX, USA, Tech. Memo. NGL-006-69-3, Nov. 15, 1987.
+\bibitem{kleinrock1975queueing}
+L. Kleinrock, \emph{Queueing Systems, Volume 1: Theory}. New York, NY, USA:
+Wiley, 1975.
 
-\bibitem{b8} \emph{Transmission Systems for Communications}, 3\textsuperscript{rd} ed., Western Electric Co., Winston-Salem, NC, USA, 1985, pp. 44--60.
+\bibitem{ruemmler1994disk}
+C. Ruemmler and J. Wilkes, ``An introduction to disk drive modeling,''
+\emph{Computer}, vol. 27, no. 3, pp. 17--28, Mar. 1994.
 
-\bibitem{b9} \emph{Motorola Semiconductor Data Manual}, Motorola Semiconductor Products Inc., Phoenix, AZ, USA, 1989.
+\bibitem{bucy2008disksim}
+J. S. Bucy, J. Schindler, S. W. Schlosser, and G. R. Ganger, ``The DiskSim
+simulation environment version 4.0 reference manual,'' Parallel Data Lab.,
+Carnegie Mellon Univ., Pittsburgh, PA, USA, Tech. Rep. CMU-PDL-08-101,
+May 2008.
 
-\bibitem{b10} G. O. Young, ``Synthetic structure of industrial
-plastics,'' in Plastics, vol. 3, Polymers of Hexadromicon, J. Peters,
-Ed., 2\textsuperscript{nd} ed. New York, NY, USA: McGraw-Hill, 1964, pp. 15-64.
-[Online]. Available:
-\underline{http://www.bookref.com}.
-
-\bibitem{b11} \emph{The Founders' Constitution}, Philip B. Kurland
-and Ralph Lerner, eds., Chicago, IL, USA: Univ. Chicago Press, 1987.
-[Online]. Available: \underline{http://press-pubs.uchicago.edu/founders/}
-
-\bibitem{b12} The Terahertz Wave eBook. ZOmega Terahertz Corp., 2014.
-[Online]. Available:
-\underline{http://dl.z-thz.com/eBook/zomega\_ebook\_pdf\_1206\_sr.pdf}. Accessed on: May 19, 2014.
-
-\bibitem{b13} Philip B. Kurland and Ralph Lerner, eds., \emph{The
-Founders' Constitution.} Chicago, IL, USA: Univ. of Chicago Press,
-1987, Accessed on: Feb. 28, 2010, [Online] Available:
-\underline{http://press-pubs.uchicago.edu/founders/}
-
-\bibitem{b14} J. S. Turner, ``New directions in communications,'' \emph{IEEE J. Sel. Areas Commun}., vol. 13, no. 1, pp. 11-23, Jan. 1995.
-
-\bibitem{b15} W. P. Risk, G. S. Kino, and H. J. Shaw, ``Fiber-optic frequency shifter using a surface acoustic wave incident at an oblique angle,'' \emph{Opt. Lett.}, vol. 11, no. 2, pp. 115--117, Feb. 1986.
-
-\bibitem{b16} P. Kopyt \emph{et al., ``}Electric properties of graphene-based conductive layers from DC up to terahertz range,'' \emph{IEEE THz Sci. Technol.,} to be published. DOI: 10.1109/TTHZ.2016.2544142.
-
-\bibitem{b17} PROCESS Corporation, Boston, MA, USA. Intranets:
-Internet technologies deployed behind the firewall for corporate
-productivity. Presented at INET96 Annual Meeting. [Online].
-Available: \underline{http://home.process.com/Intranets/wp2.htp}
-
-\bibitem{b18} R. J. Hijmans and J. van Etten, ``Raster: Geographic analysis and modeling with raster data,'' R Package Version 2.0-12, Jan. 12, 2012. [Online]. Available: \underline {http://CRAN.R-project.org/package=raster} 
-
-\bibitem{b19} Teralyzer. Lytera UG, Kirchhain, Germany [Online].
-Available:
-\underline{http://www.lytera.de/Terahertz\_THz\_Spectroscopy.php?id=home}, Accessed on: Jun. 5, 2014
-
-\bibitem{b20} U.S. House. 102\textsuperscript{nd} Congress, 1\textsuperscript{st} Session. (1991, Jan. 11). \emph{H. Con. Res. 1, Sense of the Congress on Approval of}  \emph{Military Action}. [Online]. Available: LEXIS Library: GENFED File: BILLS
-
-\bibitem{b21} Musical toothbrush with mirror, by L.M.R. Brooks. (1992, May 19). Patent D 326 189 [Online]. Available: NEXIS Library: LEXPAT File: DES
-
-\bibitem{b22} D. B. Payne and J. R. Stern, ``Wavelength-switched pas- sively coupled single-mode optical network,'' in \emph{Proc. IOOC-ECOC,} Boston, MA, USA, 1985, pp. 585--590.
-
-\bibitem{b23} D. Ebehard and E. Voges, ``Digital single sideband detection for interferometric sensors,'' presented at the \emph{2\textsuperscript{nd} Int. Conf. Optical Fiber Sensors,} Stuttgart, Germany, Jan. 2-5, 1984.
-
-\bibitem{b24} G. Brandli and M. Dick, ``Alternating current fed power supply,'' U.S. Patent 4 084 217, Nov. 4, 1978.
-
-\bibitem{b25} J. O. Williams, ``Narrow-band analyzer,'' Ph.D. dissertation, Dept. Elect. Eng., Harvard Univ., Cambridge, MA, USA, 1993.
-
-\bibitem{b26} N. Kawasaki, ``Parametric study of thermal and chemical nonequilibrium nozzle flow,'' M.S. thesis, Dept. Electron. Eng., Osaka Univ., Osaka, Japan, 1993.
-
-\bibitem{b27} A. Harrison, private communication, May 1995.
-
-\bibitem{b28} B. Smith, ``An approach to graphs of linear forms,'' unpublished.
-
-\bibitem{b29} A. Brahms, ``Representation error for real numbers in binary computer arithmetic,'' IEEE Computer Group Repository, Paper R-67-85.
-
-\bibitem{b30} IEEE Criteria for Class IE Electric Systems, IEEE Standard 308, 1969.
-
-\bibitem{b31} Letter Symbols for Quantities, ANSI Standard Y10.5-1968.
-
-\bibitem{b32} R. Fardel, M. Nagel, F. Nuesch, T. Lippert, and A. Wokaun, ``Fabrication of organic light emitting diode pixels by laser-assisted forward transfer,'' \emph{Appl. Phys. Lett.}, vol. 91, no. 6, Aug. 2007, Art. no. 061103.~
-
-\bibitem{b33} J. Zhang and N. Tansu, ``Optical gain and laser characteristics of InGaN quantum wells on ternary InGaN substrates,'' \emph{IEEE Photon. J.}, vol. 5, no. 2, Apr. 2013, Art. no. 2600111
-
-\bibitem{b34} S. Azodolmolky~\emph{et al.}, Experimental demonstration of an impairment aware network planning and operation tool for transparent/translucent optical networks,''~\emph{J. Lightw. Technol.}, vol. 29, no. 4, pp. 439--448, Sep. 2011.
+\bibitem{emc2012ism}
+EMC Education Services, \emph{Information Storage and Management: Storing,
+Managing, and Protecting Digital Information in Classic, Virtualized, and
+Cloud Environments}, 2nd ed. Indianapolis, IN, USA: Wiley, 2012.
 
 \end{thebibliography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a1.png}}]{First A. Author} (M'76--SM'81--F'87) and all authors may include 
-biographies. Biographies are often not included in conference-related
-papers. This author became a Member (M) of IEEE in 1976, a Senior
-Member (SM) in 1981, and a Fellow (F) in 1987. The first paragraph may
-contain a place and/or date of birth (list place, then date). Next,
-the author's educational background is listed. The degrees should be
-listed with type of degree in what field, which institution, city,
-state, and country, and year the degree was earned. The author's major
-field of study should be lower-cased. 
-
-The second paragraph uses the pronoun of the person (he or she) and not the 
-author's last name. It lists military and work experience, including summer 
-and fellowship jobs. Job titles are capitalized. The current job must have a 
-location; previous positions may be listed 
-without one. Information concerning previous publications may be included. 
-Try not to list more than three books or published articles. The format for 
-listing publishers of a book within the biography is: title of book 
-(publisher name, year) similar to a reference. Current and previous research 
-interests end the paragraph. The third paragraph begins with the author's 
-title and last name (e.g., Dr.\ Smith, Prof.\ Jones, Mr.\ Kajor, Ms.\ Hunter). 
-List any memberships in professional societies other than the IEEE. Finally, 
-list any awards and work for IEEE committees and publications. If a 
-photograph is provided, it should be of good quality, and 
-professional-looking. Following are two examples of an author's biography.
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a1.png}}]{First Author}
+\todo{Author biography and photograph.}
 \end{IEEEbiography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a2.png}}]{Second B. Author} was born in Greenwich Village, New York, NY, USA in 
-1977. He received the B.S. and M.S. degrees in aerospace engineering from 
-the University of Virginia, Charlottesville, in 2001 and the Ph.D. degree in 
-mechanical engineering from Drexel University, Philadelphia, PA, in 2008.
-
-From 2001 to 2004, he was a Research Assistant with the Princeton Plasma 
-Physics Laboratory. Since 2009, he has been an Assistant Professor with the 
-Mechanical Engineering Department, Texas A{\&}M University, College Station. 
-He is the author of three books, more than 150 articles, and more than 70 
-inventions. His research interests include high-pressure and high-density 
-nonthermal plasma discharge processes and applications, microscale plasma 
-discharges, discharges in liquids, spectroscopic diagnostics, plasma 
-propulsion, and innovation plasma applications. He is an Associate Editor of 
-the journal \emph{Earth, Moon, Planets}, and holds two patents. 
-
-Dr. Author was a recipient of the International Association of Geomagnetism 
-and Aeronomy Young Scientist Award for Excellence in 2008, and the IEEE 
-Electromagnetic Compatibility Society Best Symposium Paper Award in 2011. 
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a2.png}}]{Second Author}
+\todo{Author biography and photograph.}
 \end{IEEEbiography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a3.png}}]{Third C. Author, Jr.} (M'87) received the B.S. degree in mechanical 
-engineering from National Chung Cheng University, Chiayi, Taiwan, in 2004 
-and the M.S. degree in mechanical engineering from National Tsing Hua 
-University, Hsinchu, Taiwan, in 2006. He is currently pursuing the Ph.D. 
-degree in mechanical engineering at Texas A{\&}M University, College 
-Station, TX, USA.
-
-From 2008 to 2009, he was a Research Assistant with the Institute of 
-Physics, Academia Sinica, Tapei, Taiwan. His research interest includes the 
-development of surface processing and biological/medical treatment 
-techniques using nonthermal atmospheric pressure plasmas, fundamental study 
-of plasma sources, and fabrication of micro- or nanostructured surfaces. 
-
-Mr. Author's awards and honors include the Frew Fellowship (Australian 
-Academy of Science), the I. I. Rabi Prize (APS), the European Frequency and 
-Time Forum Award, the Carl Zeiss Research Award, the William F. Meggers 
-Award and the Adolph Lomb Medal (OSA).
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a3.png}}]{Third Author}
+\todo{Author biography and photograph.}
 \end{IEEEbiography}
 
 \EOD
