@@ -25,13 +25,12 @@
 \doi{10.1109/ACCESS.2017.DOI}
 
 \title{StorageLab: A Verifiable, Hardware-Independent Laboratory for RAID, Disk Performance, and Data Protection Education}
-\author{\uppercase{First Author}\authorrefmark{1}, \uppercase{Second Author}\authorrefmark{1}, \uppercase{and Third Author}\authorrefmark{1}}
-\address[1]{\todo{Department, Institution, City, Country} (e-mail: \todo{e-mail})}
-\tfootnote{\todo{Funding or support statement, if any.}}
+\author{\uppercase{Manish Tandurkar}\authorrefmark{1}, \uppercase{Manish H Parashar}\authorrefmark{1}, \uppercase{Nikhil N Bharadwaj}\authorrefmark{1}, \uppercase{Namita Hiremath}\authorrefmark{1}, \uppercase{and Vinay Hegde}\authorrefmark{1}}
+\address[1]{Department of Computer Science and Engineering, RV College of Engineering, Bengaluru 560059, India (e-mail: manishtandurkar.cs23@rvce.edu.in; manishhparashar.cs23@rvce.edu.in; nikhilnb.cs23@rvce.edu.in; namitahiremath.cs23@rvce.edu.in; vinayvhegde@rvce.edu.in)}
 
-\markboth {Author \headeretal: StorageLab: A Verifiable Laboratory for Storage Systems Education} {Author \headeretal: StorageLab: A Verifiable Laboratory for Storage Systems Education}
+\markboth {M Tandurkar \headeretal: StorageLab: A Verifiable Laboratory for Storage Systems Education} {M Tandurkar \headeretal: StorageLab: A Verifiable Laboratory for Storage Systems Education}
 
-\corresp{Corresponding author: \todo{Name} (e-mail: \todo{e-mail}).}
+\corresp{Corresponding author: Manish Tandurkar (e-mail: manishtandurkar.cs23@rvce.edu.in).}
 
 % ABSTRACT
 \begin{abstract}
@@ -78,7 +77,7 @@ The rest of the paper is organized as follows. Section~\ref{sec:related} reviews
 
 % II-A. RAID and Erasure Coding
 \subsection{RAID and Erasure Coding}
-Patterson, Gibson, and Katz introduced redundant arrays of inexpensive disks and the numbered RAID levels \cite{patterson1988raid}. Chen \emph{et al.} later surveyed RAID performance and reliability in depth \cite{chen1994raid}. RAID 6 extends single parity to tolerate two concurrent failures. Its common construction uses the Reed-Solomon codes of \cite{reed1960polynomial}, whose application to RAID-like systems was made accessible by Plank's tutorial \cite{plank1997tutorial}. The Linux kernel's RAID 6 implementation, described by Anvin \cite{anvin2004raid6}, fixes the field GF($2^8$) with the reduction polynomial $x^8+x^4+x^3+x^2+1$ and the generator $g=2$. StorageLab adopts the same convention, so a student who studies its engine also learns the arithmetic used in a widely deployed production system.
+Patterson, Gibson, and Katz introduced redundant arrays of inexpensive disks and the numbered RAID levels \cite{patterson1988raid}. Chen \emph{et al.} later surveyed RAID performance and reliability in depth \cite{chen1994raid}. RAID 6 extends single parity to tolerate two concurrent failures. Its common construction uses the Reed-Solomon codes of \cite{reed1960polynomial}, whose application to RAID-like systems was made accessible by Plank's tutorial \cite{plank1997tutorial} and its later correction \cite{plank2005correction}. The Linux kernel's RAID 6 implementation, described by Anvin \cite{anvin2004raid6}, fixes the field GF($2^8$) with the reduction polynomial $x^8+x^4+x^3+x^2+1$ and the generator $g=2$. StorageLab adopts the same convention, so a student who studies its engine also learns the arithmetic used in a widely deployed production system.
 
 % II-B. Disk and Queueing Models
 \subsection{Disk and Queueing Models}
@@ -86,11 +85,13 @@ Ruemmler and Wilkes describe the components of disk service time, namely seek, r
 
 % II-C. Tools for Systems and Storage Education
 \subsection{Tools for Systems and Storage Education}
-\todo{Survey simulation and visualization tools used in operating systems, storage, and networking education. Cite only works that have been located and read.}
+Instructional operating systems such as Nachos \cite{christopher1993nachos} and Pintos \cite{pfaff2009pintos} let students implement threads, scheduling, virtual memory, and file systems inside a simplified kernel that runs as an ordinary process or on an emulator. They teach the inside of a single machine well, but they do not model redundant arrays, backup, or replication. The homework simulators that accompany the textbook \emph{Operating Systems: Three Easy Pieces} \cite{ostep2023, ostephw} come closest to StorageLab's scope. Its RAID simulator maps logical blocks to disks and offsets for RAID 0, 1, 4, and 5 and estimates request time with a simple disk model, and its disk simulator computes the seek, rotation, and transfer time of each request. Neither stores or reconstructs real data, and neither covers RAID 6, disk failure, or rebuild. In networking, Mininet showed that a realistic network can be emulated on a single laptop \cite{lantz2010mininet}, which is the same hardware independence that StorageLab seeks for storage.
+
+Research on visualization in computing education explains why executable behavior matters. A meta-study of 24 experiments found that how students use a visualization affects learning more than what the visualization shows \cite{hundhausen2002meta}, and an ITiCSE working group argued that visualization has little educational value unless it actively engages the learner, proposing an engagement taxonomy to classify such activity \cite{naps2002exploring}. StorageLab is designed for the more active levels of that taxonomy. Learners choose a configuration, fail disks, trigger rebuilds, change model inputs, and check the outcome against a hash or a formula, rather than watching a fixed animation.
 
 % II-D. Positioning
 \subsection{Positioning}
-DiskSim-class simulators are accurate but research-oriented and offer no learner-facing explanations. Linux md and hardware RAID are real but opaque and need privileges. Online calculators provide numbers without failure behavior or proof. StorageLab combines executable RAID on real bytes, hash-verified recovery, formula-traceable models, and explanations in a single tool that runs on a laptop.
+DiskSim-class simulators are accurate but research-oriented and offer no learner-facing explanations. Textbook homework simulators map blocks and compute times but never move real data or fail a disk. Linux md and hardware RAID are real but opaque and need privileges. Online calculators provide numbers without failure behavior or proof. StorageLab combines executable RAID on real bytes, hash-verified recovery, formula-traceable models, and explanations in a single tool that runs on a laptop.
 
 % III. SYSTEM ARCHITECTURE
 \section{System Architecture}
@@ -555,7 +556,7 @@ The disk model is M/M/1 with exponential service. Real disk service is closer to
 
 % VII-C. Evaluation
 \subsection{Evaluation}
-No user study has been conducted yet, so this paper makes claims only about correctness and performance, not about learning outcomes. \todo{Add the results of a pre-test and post-test study with control and treatment groups, and a System Usability Scale questionnaire, if run before submission.}
+No user study has been conducted yet, so this paper makes claims only about correctness and performance, not about learning outcomes. The planned pedagogical evaluation is described in Section~\ref{sec:concl}.
 
 % VII-D. Security
 \subsection{Security}
@@ -570,10 +571,14 @@ Future work includes, first and most important, a pedagogical evaluation with pr
 
 % ACKNOWLEDGMENT
 \section*{Acknowledgment}
-\todo{Acknowledgments, if any.}
+The authors used Claude (Anthropic), an AI assistant, to help draft and edit the text of this article and to check the details of the references. The authors reviewed all of the content, verified every formula, measurement, and citation against the StorageLab source code and the original sources, and take full responsibility for the article.
 
 % REFERENCES
 \begin{thebibliography}{00}
+
+\bibitem{emc2012ism} EMC Education Services, \emph{Information Storage and Management: Storing, Managing, and Protecting Digital Information in Classic, Virtualized, and Cloud Environments}, 2nd ed. Indianapolis, IN, USA: Wiley, 2012.
+
+\bibitem{bucy2008disksim} J. S. Bucy, J. Schindler, S. W. Schlosser, and G. R. Ganger, ``The DiskSim simulation environment version 4.0 reference manual,'' Parallel Data Lab., Carnegie Mellon Univ., Pittsburgh, PA, USA, Tech. Rep. CMU-PDL-08-101, May 2008.
 
 \bibitem{patterson1988raid} D. A. Patterson, G. Gibson, and R. H. Katz, ``A case for redundant arrays of inexpensive disks (RAID),'' in \emph{Proc. ACM SIGMOD Int. Conf. Manage. Data}, Chicago, IL, USA, 1988, pp. 109--116.
 
@@ -581,33 +586,49 @@ Future work includes, first and most important, a pedagogical evaluation with pr
 
 \bibitem{reed1960polynomial} I. S. Reed and G. Solomon, ``Polynomial codes over certain finite fields,'' \emph{J. Soc. Ind. Appl. Math.}, vol. 8, no. 2, pp. 300--304, 1960.
 
-\bibitem{plank1997tutorial} J. S. Plank, ``A tutorial on Reed-Solomon coding for fault-tolerance in RAID-like systems,'' \emph{Softw. Pract. Exper.}, vol. 27, no. 9, pp. 995--1012, 1997.
+\bibitem{plank1997tutorial} J. S. Plank, ``A tutorial on Reed-Solomon coding for fault-tolerance in RAID-like systems,'' \emph{Softw. Pract. Exper.}, vol. 27, no. 9, pp. 995--1012, Sep. 1997.
 
-\bibitem{anvin2004raid6} H. P. Anvin, ``The mathematics of RAID-6,'' 2004. [Online]. Available: https://www.kernel.org/pub/linux/kernel/people/hpa/raid6.pdf
+\bibitem{plank2005correction} J. S. Plank and Y. Ding, ``Note: Correction to the 1997 tutorial on Reed-Solomon coding,'' \emph{Softw. Pract. Exper.}, vol. 35, no. 2, pp. 189--194, 2005.
 
-\bibitem{little1961proof} J. D. C. Little, ``A proof for the queuing formula: $L = \lambda W$,'' \emph{Oper. Res.}, vol. 9, no. 3, pp. 383--387, 1961.
-
-\bibitem{kleinrock1975queueing} L. Kleinrock, \emph{Queueing Systems, Volume 1: Theory}. New York, NY, USA: Wiley, 1975.
+\bibitem{anvin2004raid6} H. P. Anvin, ``The mathematics of RAID-6,'' Jan. 2004, last updated Dec. 2011. [Online]. Available: https://www.kernel.org/pub/linux/kernel/people/hpa/raid6.pdf
 
 \bibitem{ruemmler1994disk} C. Ruemmler and J. Wilkes, ``An introduction to disk drive modeling,'' \emph{Computer}, vol. 27, no. 3, pp. 17--28, Mar. 1994.
 
-\bibitem{bucy2008disksim} J. S. Bucy, J. Schindler, S. W. Schlosser, and G. R. Ganger, ``The DiskSim simulation environment version 4.0 reference manual,'' Parallel Data Lab., Carnegie Mellon Univ., Pittsburgh, PA, USA, Tech. Rep. CMU-PDL-08-101, May 2008.
+\bibitem{kleinrock1975queueing} L. Kleinrock, \emph{Queueing Systems, Volume 1: Theory}. New York, NY, USA: Wiley, 1975.
 
-\bibitem{emc2012ism} EMC Education Services, \emph{Information Storage and Management: Storing, Managing, and Protecting Digital Information in Classic, Virtualized, and Cloud Environments}, 2nd ed. Indianapolis, IN, USA: Wiley, 2012.
+\bibitem{little1961proof} J. D. C. Little, ``A proof for the queuing formula: $L = \lambda W$,'' \emph{Oper. Res.}, vol. 9, no. 3, pp. 383--387, 1961.
+
+\bibitem{christopher1993nachos} W. A. Christopher, S. J. Procter, and T. E. Anderson, ``The Nachos instructional operating system,'' in \emph{Proc. USENIX Winter Conf.}, San Diego, CA, USA, 1993, pp. 481--488.
+
+\bibitem{pfaff2009pintos} B. Pfaff, A. Romano, and G. Back, ``The Pintos instructional operating system kernel,'' in \emph{Proc. 40th ACM Tech. Symp. Comput. Sci. Educ. (SIGCSE)}, 2009, pp. 453--457.
+
+\bibitem{ostep2023} R. H. Arpaci-Dusseau and A. C. Arpaci-Dusseau, \emph{Operating Systems: Three Easy Pieces}, version 1.10. Arpaci-Dusseau Books, Nov. 2023. [Online]. Available: https://pages.cs.wisc.edu/\textasciitilde remzi/OSTEP/
+
+\bibitem{ostephw} R. H. Arpaci-Dusseau and A. C. Arpaci-Dusseau, ``OSTEP homework: \texttt{raid.py} and \texttt{disk.py} simulators.'' [Online]. Available: https://github.com/remzi-arpacidusseau/ostep-homework (accessed Nov. 25, 2026).
+
+\bibitem{lantz2010mininet} B. Lantz, B. Heller, and N. McKeown, ``A network in a laptop: Rapid prototyping for software-defined networks,'' in \emph{Proc. 9th ACM SIGCOMM Workshop Hot Topics Netw. (HotNets)}, Monterey, CA, USA, 2010, pp. 1--6.
+
+\bibitem{hundhausen2002meta} C. D. Hundhausen, S. A. Douglas, and J. T. Stasko, ``A meta-study of algorithm visualization effectiveness,'' \emph{J. Vis. Lang. Comput.}, vol. 13, no. 3, pp. 259--290, Jun. 2002.
+
+\bibitem{naps2002exploring} T. L. Naps, G. R\"{o}{\ss}ling, V. Almstrum, W. Dann, R. Fleischer, C. Hundhausen, A. Korhonen, L. Malmi, M. McNally, S. Rodger, and J. \'{A}. Vel\'{a}zquez-Iturbide, ``Exploring the role of visualization and engagement in computer science education,'' in \emph{Working Group Reports ITiCSE Innov. Technol. Comput. Sci. Educ. (ITiCSE-WGR)}, 2002, pp. 131--152.
 
 \end{thebibliography}
 
 % AUTHOR BIOGRAPHIES
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a1.png}}]{First Author}
-\todo{Author biography and photograph.}
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{ManishT.jpg}}]{Manish Tandurkar}
+is currently pursuing the B.E. degree in computer science and engineering at RV College of Engineering, Bengaluru, India. Manish led the design and implementation of StorageLab's block-level RAID engine, including the rotating-parity layout, the Reed-Solomon reconstruction for every RAID 6 two-erasure case, and hot-spare rebuild with SHA-256 verification, and designed and ran the exhaustive fault-injection campaign over 1,058 failure combinations that validates it. Manish's research interests include storage systems, erasure coding, and fault tolerance.
 \end{IEEEbiography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a2.png}}]{Second Author}
-\todo{Author biography and photograph.}
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{ManishHP.jpeg}}]{Manish H Parashar}
+is currently pursuing the B.E. degree in computer science and engineering at RV College of Engineering, Bengaluru, India. Manish built StorageLab's FastAPI back end and REST interface, including request validation, the uniform response format with units, assumptions, and explanations, the streamed rebuild endpoint, the SQLite scenario store, and the Docker deployment, and wrote the API test suite. Manish's research interests include distributed systems, data protection, and web services.
 \end{IEEEbiography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a3.png}}]{Third Author}
-\todo{Author biography and photograph.}
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{Nikhil.jpeg}}]{Nikhil N Bharadwaj}
+is currently pursuing the B.E. degree in computer science and engineering at RV College of Engineering, Bengaluru, India. Nikhil developed StorageLab's analytical models, namely the M/M/1 disk performance model, the backup planner with RPO and RTO compliance, and the synchronous and asynchronous replication model, together with the formula-grounded explanation layer, and carried out the case studies and performance measurements reported in this paper. Nikhil's research interests include performance modeling, queueing theory, and computer networks.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a3.png}}]{Namita Hiremath}
+is currently pursuing the B.E. degree in computer science and engineering at RV College of Engineering, Bengaluru, India. Namita designed and built StorageLab's React and TypeScript front end, including the live-array view that shows real stored bytes, the streamed rebuild progress display, the interactive charts, and the responsive light and dark layouts, and developed the risk assessment module and the front-end tests. Namita's research interests include information storage management, human-computer interaction, and computing education.
 \end{IEEEbiography}
 
 \EOD
